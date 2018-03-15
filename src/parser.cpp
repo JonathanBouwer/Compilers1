@@ -11,23 +11,30 @@ class Parser{
 /*
 lib -> KEYWORD_PRETEXT . Function* . KEYWORD_EOF
 */
-	Tree<Token> lib(stack<Token> &allTokens){
+	Tree<Token> lib(stack<Token> &allTokens)   {
+		
 		Token topItem = allTokens.top();
 		if (topItem.type == tokenType.KEYWORD_PRETEXT) {
 			Tree<Token> parseTree(topItem);
 			allTokens.pop();
 			parseTree.addChild(functions(allTokens));
 		} else {
-			printf("Failure on character %s at row %d, column %d. Expected the Pretext keyword, I did. This is why you fail. \n", topItem.literal, topItem.row, topItem.column);
-			exit(0);
+			/*To do throw just throw it and use the keyword string - like 
+			creating a string variable as a class. The catch will be in the main
+			and all code will be ditched from there.
+			*/
+			throw string("Failure on character %s at row %d, column %d. Expected the Pretext keyword, I did. This is why you fail. \n", topItem.literal, topItem.row, topItem.column)
 		}
+		
+		
+
 	}
 
 /*
 Functions -> Keyword_Execute . Identifier_Function . Seperator_Left_Paren . Idenifier_Variable* . Seperator_Right_Paren . Keyword_Then . Statement . Keyword_You_must  
 */
 	Tree<Token> funcions(stack<Token> &allTokens){
-
+		
 	}
 /*
 Statements->Keyword_Then . Statement* . Keyword_You_Must |
