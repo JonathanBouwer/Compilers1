@@ -30,7 +30,11 @@ class Parser{
 
 	}
 
-	Tree<Token> expressions(stack<Token> &allTokens){
+	Tree<Token> expressionBinary(stack<Token> &allTokens){
+
+	}
+
+	Tree<Token> expressionNonBinary(stack<Token> &allTokens){
 
 	}
 }
