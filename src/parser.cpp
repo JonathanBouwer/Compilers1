@@ -7,6 +7,54 @@
 using namespace std;
 
 class Parser{
+	enum TokenType {
+		IDENTIFIER_FUNCTION,
+		IDENTIFIER_VARIABLE,
+		LITERAL_CHAR,
+		LITERAL_FLOAT,
+		LITERAL_INTEGER,
+		LITERAL_STRING,
+		KEYWORD_DO,
+		KEYWORD_EXECUTE,
+		KEYWORD_FORCE,
+		KEYWORD_IF,
+		KEYWORD_LET,
+		KEYWORD_PRETEXT,
+		KEYWORD_THEN,
+		KEYWORD_TRANSMIT,
+		KEYWORD_WHILE,
+		KEYWORD_WITH,
+		KEYWORD_YOU_MUST,
+		KEYWORD_EOF,
+		SEPARATOR_LEFT_PAREN,
+		SEPARATOR_RIGHT_PAREN,
+		SEPARATOR_SEMICOLON,
+		OPERATOR_AND,
+		OPERATOR_BE,
+	  OPERATOR_COMMA,
+		OPERATOR_DIVIDE,
+		OPERATOR_GT,
+		OPERATOR_GTE,
+		OPERATOR_IS,
+		OPERATOR_LT,
+		OPERATOR_LTE,
+		OPERATOR_MINUS,
+		OPERATOR_MOD,
+		OPERATOR_NEQ,
+		OPERATOR_OR,
+		OPERATOR_PLUS,
+		OPERATOR_POW,
+		OPERATOR_TIMES,
+		WHITESPACE
+	};
+	const int NUMBERFUNCTIONS = 1;
+	const TokenType[][] FUNCTIONTOKEN = { {KEYWORD_FORCE, IDENTIFIER_FUNCTION, SEPARATOR_LEFT_PAREN, IDENTIFIER_VARIABLE, SEPARATOR_RIGHT_PAREN, KEYWORD_THEN, KEYWORD_YOU_MUST} };
+	const TokenType[][] STATEMENTOKEN = {{ KEYWORD_THEN , Statement* , KEYWORD_YOU_MUST},
+			{KEYWORD_IF , SEPARATOR_LEFT_PAREN . ExpressionNonBinary , SEPARATOR_RIGHT_PAREN , Statement },
+			{KEYWORD_DO , Statement , KEYWORD_WHILE , SEPARATOR_LEFT_PAREN , Expression , SEPARATOR_RIGHT_PAREN },
+			{KEYWORD_TRANSMIT , Expression , SEPARATOR_SEMICOLON },
+			{KEYWORD_LET , IDENTIFIER_VARIABLE , OPERATOR_BE , Expression },
+			{Expression , SEPARATOR_SEMICOLON}}
 	Parser(){}
 /*
 lib -> KEYWORD_PRETEXT . Function* . KEYWORD_EOF
@@ -14,7 +62,7 @@ lib -> KEYWORD_PRETEXT . Function* . KEYWORD_EOF
 	Tree<Token> lib(stack<Token> &allTokens)   {
 		
 		Token topItem = allTokens.top();
-		if (topItem.type == tokenType.KEYWORD_PRETEXT) {
+		if (topItem.type == tokenType.TokenType.KEYWORD_PRETEXT) {
 			Tree<Token> parseTree(topItem);
 			allTokens.pop();
 			parseTree.addChild(functions(allTokens));
@@ -31,10 +79,18 @@ lib -> KEYWORD_PRETEXT . Function* . KEYWORD_EOF
 	}
 
 /*
-Functions -> Keyword_Execute . Identifier_Function . Seperator_Left_Paren . Idenifier_Variable* . Seperator_Right_Paren . Keyword_Then . Statement . Keyword_You_must  
+Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenifier_Variable* . Seperator_Right_Paren . Keyword_Then . Statement . Keyword_You_must  
 */
 	Tree<Token> funcions(stack<Token> &allTokens){
 		
+		Tree<Token> funcTree(allTokens.top());
+		allTokens.pop();
+		while (allTokens.top().type != tokenType.TokenType.KEYWORD_YOU_MUST){
+
+		}
+		
+
+		return funcTree;
 	}
 /*
 Statements->Keyword_Then . Statement* . Keyword_You_Must |
