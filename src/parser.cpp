@@ -21,11 +21,20 @@ class Parser{
 		}
 	}
 
-//
+/*
+Functions -> Keyword_Execute . Identifier_Function . Seperator_Left_Paren . Idenifier_Variable* . Seperator_Right_Paren . Keyword_Then . Statement . Keyword_You_must  
+*/
 	Tree<Token> funcions(stack<Token> &allTokens){
 
 	}
-
+/*
+Statements->Keyword_Then . Statement* . Keyword_You_Must |
+			Keyword_If . Seperator_Left_Paren . ExpressionNonBinary . Seperator_Right_Paren . Statement |
+			Keyword_Do . Statement . Keyword_While . Seperator_Left_Paren . Expression . Separtor_Right_Paren |
+			Keyword_Transmit . Expression . Seperator_Semicolon |
+			Keyword_Let . Identifier_Variable . Operator_Be . Expression |
+			Expression . Seperator_Semicolon
+*/
 	Tree<Token> statements(stack<Token> &allTokens){
 
 	}
