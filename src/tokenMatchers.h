@@ -3,8 +3,7 @@
 #include "tokenType.h"
 
 std::vector<TokenRegex> matchers = {
-    {NEWLINE, std::regex("([\\r\\n])*")},
-	{WHITESPACE, std::regex("([^\\S\\n\\r])*")},
+	{WHITESPACE, std::regex("(\\s)*")},
 	{SEPARATOR_LEFT_PAREN, std::regex("\\(")},
 	{SEPARATOR_RIGHT_PAREN, std::regex("\\)")},
 	{SEPARATOR_SEMICOLON, std::regex(";")},
@@ -20,6 +19,7 @@ std::vector<TokenRegex> matchers = {
 	{KEYWORD_YOU_MUST, std::regex("you_must")},
 	{OPERATOR_AND, std::regex("&&")},
 	{OPERATOR_BE, std::regex("be")},
+	{OPERATOR_COMMA, std::regex(",")},
 	{OPERATOR_DIVIDE, std::regex("/")},
 	{OPERATOR_GT, std::regex(">")},
 	{OPERATOR_GTE, std::regex(">=")},

@@ -1,0 +1,19 @@
+a_long_time_ago_in_a_galaxy_far_far_away
+
+force order_63(a,b,c) then
+    transmit (a+b)/2 * c;
+you_must
+
+force order_64(j) then
+    let i be j + j/2;
+    transmit execute order_Sqrt(execute order_63(i,j,5));
+you_must
+
+force order_65(left, right) then
+    transmit left + ' ' + right;
+you_must
+
+force order_66() then
+    order_PrintLine(execute order_64(4));
+    order_PrintLine(execute order_65("Hello","World"));
+you_must

@@ -37,11 +37,19 @@ void printPrettyTestTree() {
 }
 
 int main(int argc, char** argv) {
-    setupWindowsWideChar();
+    //setupWindowsWideChar();
 
     //call to function to test pretty tree printing
-    printPrettyTestTree();
-    
+    //printPrettyTestTree();
+    try {
+        auto s = tokenizeFile("sample/Functions.ys");
+        while (!s.empty()) {
+            std::cout << s.top() << std::endl;
+            s.pop();
+        }
+    } catch(const string& s) {
+        std::cout << s << std::endl;
+    }
     return 0;
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <ostream>
 #include <string>
 #include <regex>
 
@@ -38,14 +39,163 @@ enum TokenType {
     OPERATOR_POW,
     OPERATOR_TIMES,
     END_OF_FILE,
-    WHITESPACE,
-    NEWLINE
+    WHITESPACE
 };
 
 struct Token {
     TokenType type;
     std::string literal;
     int row, column;
+    
+    friend std::ostream& operator<<(std::ostream& out, const Token& token) {
+        out << "(";
+        switch (token.type) {
+            case IDENTIFIER_FUNCTION : {
+                out << "IDENTIFIER_FUNCTION<" << token.literal << ">";
+                break;
+            }
+            case IDENTIFIER_VARIABLE : {
+                out << "IDENTIFIER_VARIABLE<" << token.literal << ">";
+                break;
+            }
+            case LITERAL_CHAR : {
+                out << "LITERAL_CHAR<" << token.literal << ">";
+                break;
+            }
+            case LITERAL_INTEGER : {
+                out << "LITERAL_INTEGER<" << token.literal << ">";
+                break;
+            }
+            case LITERAL_STRING : {
+                out << "LITERAL_STRING<" << token.literal << ">";
+                break;
+            }
+            case KEYWORD_DO : {
+                out << "KEYWORD_DO";
+                break;
+            }
+            case KEYWORD_EXECUTE : {
+                out << "KEYWORD_EXECUTE";
+                break;
+            }
+            case KEYWORD_FORCE : {
+                out << "KEYWORD_FORCE";
+                break;
+            }
+            case KEYWORD_IF : {
+                out << "KEYWORD_IF";
+                break;
+            }
+            case KEYWORD_LET : {
+                out << "KEYWORD_LET";
+                break;
+            }
+            case KEYWORD_PRETEXT : {
+                out << "KEYWORD_PRETEXT";
+                break;
+            }
+            case KEYWORD_THEN : {
+                out << "KEYWORD_THEN";
+                break;
+            }
+            case KEYWORD_TRANSMIT : {
+                out << "KEYWORD_TRANSMIT";
+                break;
+            }
+            case KEYWORD_WHILE : {
+                out << "KEYWORD_WHILE";
+                break;
+            }
+            case KEYWORD_YOU_MUST : {
+                out << "KEYWORD_YOU_MUST";
+                break;
+            }
+            case SEPARATOR_LEFT_PAREN : {
+                out << "SEPARATOR_LEFT_PAREN";
+                break;
+            }
+            case SEPARATOR_RIGHT_PAREN : {
+                out << "SEPARATOR_RIGHT_PAREN";
+                break;
+            }
+            case SEPARATOR_SEMICOLON : {
+                out << "SEPARATOR_SEMICOLON";
+                break;
+            }
+            case OPERATOR_AND : {
+                out << "OPERATOR_AND";
+                break;
+            }
+            case OPERATOR_BE : {
+                out << "OPERATOR_BE";
+                break;
+            }
+            case OPERATOR_COMMA : {
+                out << "OPERATOR_COMMA";
+                break;
+            }
+            case OPERATOR_DIVIDE : {
+                out << "OPERATOR_DIVIDE";
+                break;
+            }
+            case OPERATOR_GT : {
+                out << "OPERATOR_GT";
+                break;
+            }
+            case OPERATOR_GTE : {
+                out << "OPERATOR_GTE";
+                break;
+            }
+            case OPERATOR_IS : {
+                out << "OPERATOR_IS";
+                break;
+            }
+            case OPERATOR_LT : {
+                out << "OPERATOR_LT";
+                break;
+            }
+            case OPERATOR_LTE : {
+                out << "OPERATOR_LTE";
+                break;
+            }
+            case OPERATOR_MINUS : {
+                out << "OPERATOR_MINUS";
+                break;
+            }
+            case OPERATOR_MOD : {
+                out << "OPERATOR_MOD";
+                break;
+            }
+            case OPERATOR_NEQ : {
+                out << "OPERATOR_NEQ";
+                break;
+            }
+            case OPERATOR_OR : {
+                out << "OPERATOR_OR";
+                break;
+            }
+            case OPERATOR_PLUS : {
+                out << "OPERATOR_PLUS";
+                break;
+            }
+            case OPERATOR_POW : {
+                out << "OPERATOR_POW";
+                break;
+            }
+            case OPERATOR_TIMES : {
+                out << "OPERATOR_TIMES";
+                break;
+            }
+            case END_OF_FILE : {
+                out << "END_OF_FILE";
+                break;
+            }
+        }
+        out << ", Line:" << token.row;
+        out << ", Character:" << token.column;
+        out << ")";
+        return out;
+    }
 };
 
 struct TokenRegex {
