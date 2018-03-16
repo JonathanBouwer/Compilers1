@@ -11,6 +11,9 @@
 
 using namespace std;
 
+/*
+** Simple method to read a file into a string
+*/
 string readFile(const string& fileName) {
     stringstream ss;
     ifstream input(fileName);
@@ -19,13 +22,19 @@ string readFile(const string& fileName) {
     return ss.str();
 }
 
-int nextTokenLength(const string& input, int currentPos) {
+/*
+** Method to find the longest token starting at currentPos
+** linear searches on the length until no tokens match and
+** then returns length - 1, or throws an error if no token
+** is found
+*/
+int nextTokenLength(const string& input, int column, int row) {
     int tokenLength = 0;
     bool validMatchers = true;
     while (validMatchers) {
         ++tokenLength;
         validMatchers = false;
-        auto tokenStart = input.begin() + currentPos;
+        auto tokenStart = input.begin() + column;
         auto tokenEnd = tokenStart + tokenLength;
         for (TokenRegex& matcher : matchers) {
             if (regex_match(tokenStart, tokenEnd, matcher.matcher)) {
@@ -35,23 +44,36 @@ int nextTokenLength(const string& input, int currentPos) {
         }
     }        
     --tokenLength;
+       
+    // If no token is found throw an error 
+    if (tokenLength == 0) {
+        stringstream ss;
+        ss << "Lexing Error: Unidentified token at " << row << ":" << column+1;
+        ss << " - \"" << string(input, column) << "\"\n";
+        throw ss.str();
+    }
     return tokenLength;
 }
 
+/*
+** Method to find the position of a character in a string or throws an
+** error if not found
+*/
 int findNextMatchingChar(const string& input, int column, char c, int row) {
-    int index = 1;
-    while (input[column + index] != c) {
-        ++index;
-        if (column + index >= input.length()) {
-            stringstream ss;
-            ss << "Lexing Error: " << c << " character at ";
-            ss << row << ":" << column << " was never closed\n";
-            throw ss.str();
-        }
+    int pos = input.find(c, column + 1);
+    if (pos < 0) {
+        stringstream ss;
+        ss << "Lexing Error: " << c << " character at ";
+        ss << row << ":" << column << " was never closed\n";
+        throw ss.str();
     }
-    return index;
+    return pos;
 }
 
+/*
+** Method to take an input string and convert it into a stream of tokens.
+** If an error occurs during lexing then a string is thrown.
+*/
 stack<Token> tokenize(const string& input) {
     vector<Token> tokenStream;
     int row = 0;
@@ -60,15 +82,9 @@ stack<Token> tokenize(const string& input) {
     while (getline(ss, currentLine)) {
         ++row;
         int column = 0;
+        // Loop through current line
         while (column < currentLine.length()) {
-            int tokenLength = nextTokenLength(currentLine, column);
-            
-            if (tokenLength == 0) {
-                stringstream ss;
-                ss << "Lexing Error: Unidentified token at " << row << ":" << column+1;
-                ss << " - \"" << string(currentLine, column) << "\"\n";
-                throw ss.str();
-            }
+            int tokenLength = nextTokenLength(currentLine, column, row);
             
             // Parse token and add it to the tree
             auto tokenStart = currentLine.begin() + column;
@@ -104,6 +120,9 @@ stack<Token> tokenize(const string& input) {
     return stack<Token>(deque<Token>(tokenStream.rbegin(), tokenStream.rend()));
 }
 
+/*
+** Wrapper Method to read file and tokenize it.
+*/
 stack<Token> tokenizeFile(const string& fileName) {
     string input = readFile(fileName);
     return tokenize(input);

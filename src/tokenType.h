@@ -3,6 +3,9 @@
 #include <string>
 #include <regex>
 
+/*
+** List of possible tokens in our language
+*/
 enum TokenType {
     IDENTIFIER_FUNCTION,
     IDENTIFIER_VARIABLE,
@@ -42,6 +45,9 @@ enum TokenType {
     WHITESPACE
 };
 
+/*
+** Token data structure containing TokenType type, string literal and int row & column
+*/
 struct Token {
     TokenType type;
     std::string literal;
@@ -198,6 +204,9 @@ struct Token {
     }
 };
 
+/*
+** Token regex structure intended for keeping a map of TokenTypes to regular expressions
+*/
 struct TokenRegex {
     TokenType type;
     std::regex matcher;
