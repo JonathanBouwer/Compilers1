@@ -4,11 +4,21 @@
 #include <queue>
 #include <vector>
 #include "tree.h"
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
+
+void setupWindowsWideChar() {
+    #ifdef _WIN32
+    _setmode(_fileno(stdout), _O_WTEXT);
+    #endif
+}
 using namespace std;
 
 class TokenOp{
 public:
-	enum TokenPiece {WORD1, WORD2,WORD3,LETTER1,LETTER2,LETTER3,DIGIT1,DIGIT2,DIGIT3,WORDCONVERT, LETTERCONVERT, DIGITCONVERTER};
+	enum TokenPiece {BEG,WORD1, WORD2,WORD3,LETTER1,LETTER2,LETTER3,DIGIT1,DIGIT2,DIGIT3,WORDCONVERT, LETTERCONVERT, DIGITCONVERTER};
 	string value;
 	TokenPiece tp ;
 	TokenOp(string val, TokenPiece t){
@@ -21,7 +31,7 @@ class Token {
 public:
 	stack<TokenOp> pieceList;
 	Token(){
-		pieceList.push(TokenOp("Letter2", TokenOp::TokenPiece::DIGIT2));
+		/*pieceList.push(TokenOp("Letter2", TokenOp::TokenPiece::DIGIT2));
 		//pieceList.push(TokenOp("Letter2", TokenOp::TokenPiece::DIGITCONVERTER));
 		pieceList.push(TokenOp("Letter2", TokenOp::TokenPiece::DIGIT1));
 		pieceList.push(TokenOp("Letter2", TokenOp::TokenPiece::DIGIT3));
@@ -34,10 +44,11 @@ public:
 		pieceList.push(TokenOp("Word3",TokenOp::TokenPiece::WORD2));
 		pieceList.push(TokenOp("Word1",TokenOp::TokenPiece::WORD1));
 		//pieceList.push(TokenOp("Word2",TokenOp::TokenPiece::WORD3));
-		//pieceList.push_back(TokenOp("Word3",TokenOp::TokenPiece::WORD3));
-		/*pieceList.push(TokenOp("Word3",TokenOp::TokenPiece::WORD3));
+		//pieceList.push_back(TokenOp("Word3",TokenOp::TokenPiece::WORD3));*/
+		pieceList.push(TokenOp("Word3",TokenOp::TokenPiece::WORD3));
 		pieceList.push(TokenOp("Word3",TokenOp::TokenPiece::WORD2));
-		pieceList.push(TokenOp("Word1",TokenOp::TokenPiece::WORD1));*/
+		pieceList.push(TokenOp("Word1",TokenOp::TokenPiece::WORD1));
+		pieceList.push(TokenOp("Beg1",TokenOp::TokenPiece::BEG));
 	}
 
 	stack<TokenOp> getPiece() const{
@@ -47,7 +58,7 @@ public:
 };
 
 //TokenOp::TokenPiece::WORD1,TokenOp::TokenPiece::WORD2, TokenOp::TokenPiece::WORDCONVERT
-const vector<vector<TokenOp::TokenPiece> > language1 = {{TokenOp::TokenPiece::WORD1,TokenOp::TokenPiece::WORD2, TokenOp::TokenPiece::WORDCONVERT},{TokenOp::TokenPiece::WORD1,TokenOp::TokenPiece::WORD2,TokenOp::TokenPiece::WORD3},{TokenOp::TokenPiece::WORD3,TokenOp::TokenPiece::WORD2,TokenOp::TokenPiece::WORD1}};
+const vector<vector<TokenOp::TokenPiece> > language1 = {{TokenOp::TokenPiece::WORD1,TokenOp::TokenPiece::WORD2, TokenOp::TokenPiece::WORD3},{TokenOp::TokenPiece::WORD1,TokenOp::TokenPiece::WORD2,TokenOp::TokenPiece::WORD3},{TokenOp::TokenPiece::WORD3,TokenOp::TokenPiece::WORD2,TokenOp::TokenPiece::WORD1}};
 const vector<vector<TokenOp::TokenPiece> > language2 = {{TokenOp::TokenPiece::LETTER1,TokenOp::TokenPiece::LETTER2},{TokenOp::TokenPiece::LETTER3,TokenOp::TokenPiece::LETTER2,TokenOp::TokenPiece::LETTER1, TokenOp::TokenPiece::LETTERCONVERT},{TokenOp::TokenPiece::LETTER1}};
 const vector<vector<TokenOp::TokenPiece> > language3 = {{TokenOp::TokenPiece::DIGIT1,TokenOp::TokenPiece::DIGIT3,TokenOp::TokenPiece::DIGIT1, TokenOp::TokenPiece::DIGITCONVERTER},{TokenOp::TokenPiece::DIGIT3,TokenOp::TokenPiece::DIGIT1},{TokenOp::TokenPiece::DIGIT2},{TokenOp::TokenPiece::DIGIT2,TokenOp::TokenPiece::DIGIT1}};
 //const Token alltokens[][3] = {{WORD1,WORD2}, {WORD3, WORD2}};
@@ -106,7 +117,10 @@ void language2Test(stack<TokenOp> &pieceList){
 	}
 }
 
-void language1Test(stack<TokenOp> &pieceList){
+Tree<TokenOp> language1Test(stack<TokenOp> &pieceList){
+	TokenOp temp = pieceList.top();
+	Tree<TokenOp> retTree(temp);
+	pieceList.pop();
 	for (int outerLoop = 0;  outerLoop < language1.size();outerLoop++){
 		stack<TokenOp> usedTokens;
 		for (int innerLoop =0; innerLoop < language1[outerLoop].size();innerLoop++){
@@ -118,7 +132,9 @@ void language1Test(stack<TokenOp> &pieceList){
 				language2Test(pieceList);
 				break;
 			}else if ( pieceList.top().tp == language1[outerLoop][innerLoop]){
-
+				temp = pieceList.top();
+				Tree<TokenOp> temp2(temp);
+				retTree.addChild(temp2);
 				//cout << "Got one in" <<endl;
 				cout << "Stack size" << pieceList.size() << endl;
 			}else{
@@ -134,7 +150,7 @@ void language1Test(stack<TokenOp> &pieceList){
 		}
 		if (pieceList.size() == 0){
 			cout << "completedTree" << endl;
-			return;
+			return retTree;
 		}else{
 			//backtrack here
 			cout << "got to backtrack" << endl;
@@ -145,14 +161,16 @@ void language1Test(stack<TokenOp> &pieceList){
 			}
 
 		}
-			
+
 	}
 	if (pieceList.size() != 0){
 			throw string("Broke in language 1");
 			//cout << "To next loop" << endl;
 		}
-	cout << "Got to end" << endl;
 
+	cout << "Got to end" << endl;
+	Tree<TokenOp> ret(temp);
+	return ret;
 }
 
 
@@ -170,10 +188,11 @@ string throwableCode() {
 int main(int argc, char const *argv[])
 {
 	try {
-		
+
 		Token tok;
 		stack<TokenOp> toks = tok.getPiece();
-		language1Test(toks);
+		Tree<TokenOp> print = language1Test(toks);
+		//std::wcout << print;
 		//language1Test(tok.getPiece());
 	}catch (string error){
 		cout << error << endl;

@@ -30,45 +30,45 @@ class Tree {
         Tree<T>* parent;
         T value;
     public:
-        Tree() {}
-        
+        Tree():value(""), parent(NULL) {}
+
         Tree(T val) : value(val), parent(NULL) {}
-        
-        Tree(const Tree& other) : value(other.value), 
+
+        Tree(const Tree& other) : value(other.value),
                                   children(other.children) {}
-        
-        Tree(Tree&& other) : value(std::move(other.value)), 
+
+        Tree(Tree&& other) : value(std::move(other.value)),
                              children(std::move(other.children)) {}
-        
+
         Tree& operator=(const Tree& other) {
             value = other.value;
             children = other.children;
         }
-        
+
         Tree& operator=(Tree&& other) {
             value = std::move(other.value);
             children = std::move(other.children);
         }
-        
+
         ~Tree() {}
-        
+
         void addChild(Tree& child) {
             children.push_back(&child);
         }
-        
+
         friend std::wostream& operator<<(std::wostream& out, const Tree<T>& tree) {
             out << prettyPrint(tree);
             return out;
         }
-        
-        friend std::wstring prettyPrint(const Tree<T>& tree, 
-                                        std::wstring initialPrefix = L"", 
+
+        friend std::wstring prettyPrint(const Tree<T>& tree,
+                                        std::wstring initialPrefix = L"",
                                         std::wstring prefix = L"") {
             std::wstringstream output;
             output << initialPrefix << toWString<T>(tree.value)  << L"\n";
             if (tree.children.size() == 0) return output.str();
-            
-            int lastChildIndex = tree.children.size() - 1;            
+
+            int lastChildIndex = tree.children.size() - 1;
             for (int i = 0; i < lastChildIndex; i++) {
                 Tree<T> *child = tree.children[i];
                 output << prettyPrint(*child, prefix + topInitPrefix, prefix + topPrefix);

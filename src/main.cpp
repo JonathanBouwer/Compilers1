@@ -31,7 +31,7 @@ void printPrettyTestTree() {
 	tree4.addChild(tree5);
 	tree7.addChild(tree8);
 
-	std::wcout << tree1;
+	std::cout << tree1;
 }
 
 int main(int argc, char** argv) {
@@ -42,4 +42,3 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-

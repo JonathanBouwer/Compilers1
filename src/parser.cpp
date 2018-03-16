@@ -31,7 +31,7 @@ class Parser{
 		SEPARATOR_SEMICOLON,
 		OPERATOR_AND,
 		OPERATOR_BE,
-	  OPERATOR_COMMA,
+	  	OPERATOR_COMMA,
 		OPERATOR_DIVIDE,
 		OPERATOR_GT,
 		OPERATOR_GTE,
@@ -49,47 +49,85 @@ class Parser{
 		STATEMENT,
 		FUNCTION,
 		EXPRESSIONNB,
-		EXPRESSIONN 
+		EXPRESSIONB,
+		PARAMS,
 	};
+
+	/*
+	ExpNB -> IDENTIFIER_VARIABLE . ExpB |
+			 LITERAL_INTEGER . ExpB |
+			 LITERAL_STRING . ExpB |
+			 LITERAL_CHAR . ExpB |
+			 SEPARATOR_LEFT_PAREN . ExpNB . SEPARATOR_RIGHT_PAREN |
+			 KEYWORD_EXECUTE . IDENTIFIER_FUNCTION . SEPARATOR_LEFT_PAREN . ExpNB . SEPARATOR_RIGHT_PAREN |
+			 SEPARATOR_LEFT_PAREN . ExpNB . SEPARATOR_RIGHT_PAREN
+	*/
+
 	const vector<vector<Token>> FUNCTIONTOKEN = { {KEYWORD_FORCE, IDENTIFIER_FUNCTION, SEPARATOR_LEFT_PAREN, IDENTIFIER_VARIABLE, SEPARATOR_RIGHT_PAREN, KEYWORD_THEN, STATEMENT ,KEYWORD_YOU_MUST} };
-	const vector<vector<Token>> STATEMENTOKEN = {{ KEYWORD_THEN , STATEMENT , KEYWORD_YOU_MUST},
-			{KEYWORD_IF , SEPARATOR_LEFT_PAREN , EXPRESSIONNB , SEPARATOR_RIGHT_PAREN , STATEMENT },
-			{KEYWORD_DO , STATEMENT , KEYWORD_WHILE , SEPARATOR_LEFT_PAREN , EXPRESSIONNB , SEPARATOR_RIGHT_PAREN },
-			{KEYWORD_TRANSMIT , EXPRESSIONNB , SEPARATOR_SEMICOLON },
-			{KEYWORD_LET , IDENTIFIER_VARIABLE , OPERATOR_BE , EXPRESSIONNB },
-			{EXPRESSIONNB , SEPARATOR_SEMICOLON}}
+	const vector<vector<Token>> STATEMENTOKEN = { { KEYWORD_THEN , STATEMENT , KEYWORD_YOU_MUST},
+												  {KEYWORD_IF , SEPARATOR_LEFT_PAREN , EXPRESSIONNB , SEPARATOR_RIGHT_PAREN , STATEMENT },
+												  {KEYWORD_DO , STATEMENT , KEYWORD_WHILE , SEPARATOR_LEFT_PAREN , EXPRESSIONNB , SEPARATOR_RIGHT_PAREN },
+												  {KEYWORD_TRANSMIT , EXPRESSIONNB , SEPARATOR_SEMICOLON },
+												  {KEYWORD_LET , IDENTIFIER_VARIABLE , OPERATOR_BE , EXPRESSIONNB },
+												  {EXPRESSIONNB , SEPARATOR_SEMICOLON}};
+	const vector<vector<Token>> LIBTOKEN = { {FUNCTIONS, KEYWORD_EOF}};
+	const vector<vector<Token>> EXPBTOKEN = { {OPERATOR_PLUS, EXPRESSIONNB},
+	 										  {OPERATOR_TIMES, EXPRESSIONNB},
+											  {OPERATOR_MINUS, EXPRESSIONNB},
+											  {OPERATOR_DIVIDE, EXPRESSIONNB},
+											  {OPERATOR_MOD, EXPRESSIONNB},
+											  {OPERATOR_POW, EXPRESSIONNB},
+											  {OPERATOR_OR, EXPRESSIONNB},
+											  {OPERATOR_AND, EXPRESSIONNB},
+											  {OPERATOR_IS, EXPRESSIONNB},
+											  {EMPTY}};
+	const vector<vector<Token>> EXPNBTOKEN = { {IDENTIFIER_VARIABLE, EXPRESSIONB},
+											   {LITERAL_INTEGER, EXPRESSIONB},
+											   {LITERAL_STRING, EXPRESSIONB},
+											   {LITERAL_CHAR, EXPRESSIONB},
+											   {SEPERATOR_LEFT_PAREN, EXPRESSIONNB, SEPERATOR_RIGHT_PAREN},
+											   {KEYWORD_EXECUTE, IDENTIFIER_FUNCTION,SEPERATOR_LEFT_PAREN, PARAMS, SEPERATOR_RIGHT_PAREN}};
+
 	Parser(){}
 /*
 lib -> KEYWORD_PRETEXT . Function* . KEYWORD_EOF
 */
-	Tree<Token> lib(stack<Token> &allTokens)   {
-		
-		Token topItem = allTokens.top();
-		if (topItem.type == tokenType.TokenType.KEYWORD_PRETEXT) {
-			Tree<Token> parseTree(topItem);
-			allTokens.pop();
-			parseTree.addChild(functions(allTokens));
-		} else {
-			/*To do throw just throw it and use the keyword string - like 
-			creating a string variable as a class. The catch will be in the main
-			and all code will be ditched from there.
-			*/
-			throw string("Failure on character %s at row %d, column %d. Expected the Pretext keyword, I did. This is why you fail. \n", topItem.literal, topItem.row, topItem.column)
-		}
-		
-		
+Tree<Token> lib(stack<Token> &allTokens)   {
 
+	Tree<Token> retTree();
+	Token top = allTokens.top();
+	if (top.type = TokenType.KEYWORD_PRETEXT) {
+		retTree.addChild(Tree<Token>(top));
+		allTokens.pop();
+	} else {
+		throw string("Failure on character %s at row %d, column %d.
+		Expected the Pretext keyword, I did. This is why you fail. \n",
+		 top.literal, top.row, top.column);
 	}
 
+	while (allTokens.top() != TokenType.KEYWORD_EOF && allTokens.size() > 0) {
+		retTree.addChild(functions(&allTokens));
+	}
+
+	if (allTokens.top() == TokenType.KEYWORD_EOF) {
+		allTokens.pop();
+		return retTree;
+	} else {
+		throw string("Failure: Expected the End of File keyword, I did.
+		 			This is why you fail. \n");
+	}
+}
+
+
 /*
-Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenifier_Variable* . Seperator_Right_Paren . Keyword_Then . Statement . Keyword_You_must  
+Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenifier_Variable* . Seperator_Right_Paren . Keyword_Then . Statement . Keyword_You_must
 */
-	Tree<Token> funcions(stack<Token> &allTokens){
+	Tree<Token> functions(stack<Token> &allTokens){
 		Tree<Token> funcTree();
 		for (int outerLoop = 0; outerLoop < FUNCTIONTOKEN.size(); outerLoop++){
 			for (int innerLoop = 0 ; innerLoop < FUNCTIONTOKEN.get(outerLoop).size(); innerLoop++){
 				if (FUNCTIONTOKEN.get(outerLoop).get(innerLoop) == Token.IDENTIFIER_VARIABLE){
-					while (allTokens.top() == Token.Idenifier_Variable){
+					while (allTokens.top() == Token.IDENTIFIER_VARIABLE){
 						funcTree.AddChild(Tree<Token>(allTokens.top()));
 						allTokens.pop();
 						if (allTokens.top() == Token.OPERATOR_COMMA){
@@ -150,7 +188,26 @@ ExpB -> OPERATOR_PLUS . ExpNB |
 		e
 */
 	Tree<Token> expressionBinary(stack<Token> &allTokens){
+		Tree<Token> expB();
+		Token top; //not sure how token will be initialized
+		for (int outerLoop = 0; outerLoop < EXPBTOKEN.size(); outerLoop++) {
+			for (int innerLoop = 0; innerLoop < EXPBTOKEN.get(outerLoop).size(); innerLoop++) {
+				if (allTokens.size() > 0 && EXPBTOKEN[outerloop][innerloop] == TokenType.EXPRESSIONNB) {
+					expB.addChild(expressionNonBinary(&allTokens));
+					return expB;
+				} else {
+					top = allTokens.top();
+					if (top.type == EXPBTOKEN[outerloop][innerloop]) {
+						allTokens.pop();
+						expB.addChild(Tree<Token>(top));
+					} else {
+						break; //no need for used stack here, since expB only 2 tokens long
+					}
+				}
+			} //didnt add a throw message here, because expB can also just be empty, i.e. next character could be a large variety of things.
 
+		}
+		return expB;
 	}
 /*
 ExpNB -> IDENTIFIER_VARIABLE . ExpB |
@@ -158,10 +215,67 @@ ExpNB -> IDENTIFIER_VARIABLE . ExpB |
 		 LITERAL_STRING . ExpB |
 		 LITERAL_CHAR . ExpB |
 		 SEPARATOR_LEFT_PAREN . ExpNB . SEPARATOR_RIGHT_PAREN |
-		 KEYWORD_EXECUTE . IDENTIFIER_FUNCTION . SEPARATOR_LEFT_PAREN . ExpNB . SEPARATOR_RIGHT_PAREN |
-		 SEPARATOR_LEFT_PAREN . ExpNB . SEPARATOR_RIGHT_PAREN
+		 KEYWORD_EXECUTE . IDENTIFIER_FUNCTION . SEPARATOR_LEFT_PAREN . Params . SEPARATOR_RIGHT_PAREN |
 */
 	Tree<Token> expressionNonBinary(stack<Token> &allTokens){
+		Tree<Token> expNB();
+		stack<Token> usedTokens;
+		Token top; //not sure how token will be initialized
+
+		for (int outerLoop = 0; outerLoop < EXPNBTOKEN.size(); outerloop++) {
+			for (int innerLoop = 0; innerLoop < EXPNBTOKEN.get(outerLoop).size();innerloop++) {
+				if (allTokens.size() > 0 && EXPBTOKEN[outerloop][innerloop] == TokenType.EXPRESSIONB) {
+					expNB.addChild(expressionBinary(&allTokens));
+					return expNB; //because ExpB is always at the end of ExpNB
+				} else if (allTokens.size() > 0 && EXPBTOKEN[outerloop][innerloop] == TokenType.EXPRESSIONNB) {
+					expNB.addChild(expressionNonBinary(&allTokens));
+				} else if (allTokens.size() > 0 && EXPBTOKEN[outerloop][innerloop] == TokenType.PARAMS) { //checking parameters
+					if (allTokens.top() != TokenType.SEPERATOR_RIGHT_PAREN) {
+						expNB.addChild(expressionNonBinary(&allTokens));
+						while (allTokens.top() != TokenType.SEPERATOR_RIGHT_PAREN) {
+							top = allTokens.top();
+							if (top.type == TokenType.OPERATOR_COMMA) {
+								allTokens.pop();
+								expNB.addChild(expressionNonBinary(&allTokens));
+							} else {
+								throw string ("Failure at character %d, row %d, column %d.
+								Expected a comma or right parenthesis, did I. This is why you fail",
+								top.literal, top.row, top.column);
+							}
+						}
+						top = allTokens.top();
+						allTokens.pop();
+						expNB.addChild(Tree<Token>(top));
+						return expNB; //because in expNB, after params it's only right paren and then end
+					} else {
+						top = allTokens.top();
+						allTokens.pop();
+						expNB.addChild(Tree<Token>(top));
+						return expNB; //because in expNB, after params it's only right paren and then end
+					}
+				} else {
+					top = allTokens.top();
+					if (top == EXPNBTOKEN[outerloop][innerloop]) {
+						expNB.addChild(Tree<Token>(top));
+						usedTokens.push(top);
+						allTokens.pop();
+					} else {
+						if (outerloop == EXPNBTOKEN.size()-1) {
+							throw string ("Failure at character %s, row %d, column %d.
+							Matches a non-binary expression, it does not. This is why you fail",
+							top.literal, top.row, top.column);
+						} else {
+							while (usedTokens.size() != 0) {
+								allTokens.push(usedTokens.top());
+								usedTokens.pop();
+							}
+						}
+					}
+				}
+			}
+		}
+		return expNB;
 
 	}
+
 }
