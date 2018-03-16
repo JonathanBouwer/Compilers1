@@ -85,11 +85,29 @@ lib -> KEYWORD_PRETEXT . Function* . KEYWORD_EOF
 Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenifier_Variable* . Seperator_Right_Paren . Keyword_Then . Statement . Keyword_You_must  
 */
 	Tree<Token> funcions(stack<Token> &allTokens){
-		
-		Tree<Token> funcTree(allTokens.top());
-		
-		
-
+		Tree<Token> funcTree();
+		for (int outerLoop = 0; outerLoop < FUNCTIONTOKEN.size(); outerLoop++){
+			for (int innerLoop = 0 ; innerLoop < FUNCTIONTOKEN.get(outerLoop).size(); innerLoop++){
+				if (FUNCTIONTOKEN.get(outerLoop).get(innerLoop) == Token.IDENTIFIER_VARIABLE){
+					while (allTokens.top() == Token.Idenifier_Variable){
+						funcTree.AddChild(Tree<Token>(allTokens.top()));
+						allTokens.pop();
+						if (allTokens.top() == Token.OPERATOR_COMMA){
+							allTokens.pop();
+						}
+					}
+				}else if (FUNCTIONTOKEN.get(outerLoop).get(innerLoop) == Token.STATEMENT){
+					funcTree.AddChild(Statements(&allTokens));
+				}else if (allTokens.top().type == FUNCTIONTOKEN.get(outerLoop).get(innerLoop)){
+					//check to see how this works
+					funcTree.AddChild(Tree<Token>(allTokens.top()));
+				}else{
+					break;
+				}
+				allTokens.pop();
+			}
+			//Add correction to see if it fails.
+		}
 		return funcTree;
 	}
 /*
@@ -101,7 +119,23 @@ Statements->Keyword_Then . Statement* . Keyword_You_Must |
 			Expression . Seperator_Semicolon
 */
 	Tree<Token> statements(stack<Token> &allTokens){
-
+		Tree<Token> statsTree();/*
+		for (int outerLoop = 0; outerLoop < FUNCTIONTOKEN.size(); outerLoop++){
+			for (int innerLoop = 0 ; innerLoop < FUNCTIONTOKEN.get(outerLoop).size(); innerLoop++){
+				if (FUNCTIONTOKEN.get(outerLoop).get(innerLoop) == Token.STATEMENT){
+					funcTree.AddChild(Statements(&allTokens));
+				}
+				if (allTokens.top().type == FUNCTIONTOKEN.get(outerLoop).get(innerLoop)){
+					//check to see how this works
+					funcTree.AddChild(Tree<Token>(FUNCTIONTOKEN.get(outerLoop).get(innerLoop)));
+				}else{
+					break;
+				}
+			}
+			//Add correction to see if it fails.
+		}
+		return funcTree;*/
+		return statsTree;
 	}
 /*
 ExpB -> OPERATOR_PLUS . ExpNB |
