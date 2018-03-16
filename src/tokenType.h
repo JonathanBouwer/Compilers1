@@ -16,6 +16,7 @@ enum TokenType {
     KEYWORD_LET,
     KEYWORD_PRETEXT,
     KEYWORD_THEN,
+    KEYWORD_THE_END,
     KEYWORD_TRANSMIT,
     KEYWORD_WHILE,
     KEYWORD_YOU_MUST,
@@ -38,7 +39,6 @@ enum TokenType {
     OPERATOR_PLUS,
     OPERATOR_POW,
     OPERATOR_TIMES,
-    END_OF_FILE,
     WHITESPACE
 };
 
@@ -96,6 +96,10 @@ struct Token {
             }
             case KEYWORD_THEN : {
                 out << "KEYWORD_THEN";
+                break;
+            }
+            case KEYWORD_THE_END : {
+                out << "KEYWORD_THE_END";
                 break;
             }
             case KEYWORD_TRANSMIT : {
@@ -184,10 +188,6 @@ struct Token {
             }
             case OPERATOR_TIMES : {
                 out << "OPERATOR_TIMES";
-                break;
-            }
-            case END_OF_FILE : {
-                out << "END_OF_FILE";
                 break;
             }
         }

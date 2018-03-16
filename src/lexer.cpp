@@ -101,14 +101,6 @@ stack<Token> tokenize(const string& input) {
         }
     }
     
-    
-    Token endOfFile;
-    endOfFile.type = END_OF_FILE;
-    endOfFile.literal = "";
-    endOfFile.row = row+1;
-    endOfFile.column = 1;
-    tokenStream.push_back(endOfFile);
-    
     return stack<Token>(deque<Token>(tokenStream.rbegin(), tokenStream.rend()));
 }
 

@@ -14,6 +14,7 @@ std::vector<TokenRegex> matchers = {
 	{KEYWORD_LET, std::regex("let")},
 	{KEYWORD_PRETEXT, std::regex("a_long_time_ago_in_a_galaxy_far_far_away")},
 	{KEYWORD_THEN, std::regex("then")},
+	{KEYWORD_THE_END, std::regex("the_end")},
 	{KEYWORD_TRANSMIT, std::regex("transmit")},
 	{KEYWORD_WHILE, std::regex("while")},
 	{KEYWORD_YOU_MUST, std::regex("you_must")},
