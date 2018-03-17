@@ -1,27 +1,19 @@
 #pragma once
 #include <vector>
-#include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
 
-/* Constant strings representing line shapes, uses wstring to support Box Drawing Characters
+/* Constant strings representing line shapes
 ** topInit = "├───"
 ** topPre  = "│   "
 ** botInit = "└───"
 ** botPre  = "    "
 */
-const std::wstring topInitPrefix = L"\u251C\u2500\u2500\u2500";
-const std::wstring topPrefix = L"\u2502    ";
-const std::wstring botInitPrefix = L"\u2514\u2500\u2500\u2500";
-const std::wstring botPrefix = L"    ";
-
-template <typename T>
-std::wstring toWString(T s) {
-    std::stringstream ss;
-    ss << s;
-    std::string treeValue = ss.str();
-    return std::wstring(treeValue.begin(), treeValue.end());
-}
+const std::string topInitPrefix = "├───";
+const std::string topPrefix = "│   ";
+const std::string botInitPrefix = "└───";
+const std::string botPrefix = "    ";
 
 template <typename T>
 class Tree {
@@ -56,16 +48,22 @@ class Tree {
             children.push_back(&child);
         }
         
-        friend std::wostream& operator<<(std::wostream& out, const Tree<T>& tree) {
+        void printToFile(const std::string& filename) {
+            std::ofstream outputFile(filename, std::ofstream::binary);
+            outputFile << *this;
+            outputFile.close();
+        }
+        
+        friend std::ostream& operator<<(std::ostream& out, const Tree<T>& tree) {
             out << prettyPrint(tree);
             return out;
         }
         
-        friend std::wstring prettyPrint(const Tree<T>& tree, 
-                                        std::wstring initialPrefix = L"", 
-                                        std::wstring prefix = L"") {
-            std::wstringstream output;
-            output << initialPrefix << toWString<T>(tree.value)  << L"\n";
+        friend std::string prettyPrint(const Tree<T>& tree, 
+                                        std::string initialPrefix = "", 
+                                        std::string prefix = "") {
+            std::stringstream output;
+            output << initialPrefix << tree.value  << "\n";
             if (tree.children.size() == 0) return output.str();
             
             int lastChildIndex = tree.children.size() - 1;            
