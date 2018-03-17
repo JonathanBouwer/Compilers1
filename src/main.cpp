@@ -1,19 +1,9 @@
+#include <fstream>
 #include <iostream>
 #include <string>
 
 #include "tree.h"
 #include "lexer.cpp"
-
-#ifdef _WIN32
-#include <fcntl.h>
-#include <io.h>
-#endif
-
-void setupWindowsWideChar() {
-    #ifdef _WIN32
-    _setmode(_fileno(stdout), _O_U16TEXT);
-    #endif
-}
 
 void printPrettyTestTree() {
     Tree<std::string> tree1("Element 1");
@@ -33,23 +23,27 @@ void printPrettyTestTree() {
     tree4.addChild(tree5);
     tree7.addChild(tree8);
 
-    std::wcout << tree1;
+    tree1.printToFile("output.txt");
 }
 
-int main(int argc, char** argv) {
-    //setupWindowsWideChar();
-
-    //call to function to test pretty tree printing
-    //printPrettyTestTree();
+void printPrettyTestTokenStream() {
+    std::ofstream outputFile("output.txt", std::ofstream::binary | std::ofstream::app);
     try {
         auto s = tokenizeFile("sample/Functions.ys");
         while (!s.empty()) {
-            std::cout << s.top() << std::endl;
+            outputFile << s.top() << std::endl;
             s.pop();
         }
     } catch(const string& s) {
-        std::cout << s << std::endl;
+        outputFile << s << std::endl;
     }
+
+    outputFile.close();
+}
+
+int main(int argc, char** argv) {
+    printPrettyTestTree();
+    printPrettyTestTokenStream();
     return 0;
 }
 
