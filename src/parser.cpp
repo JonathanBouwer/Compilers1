@@ -124,25 +124,35 @@ Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenif
 */
 	Tree<Token> functions(stack<Token> &allTokens){
 		Tree<Token> funcTree();
+		stack<Token> usedTokens;
+		Token top;
 		for (int outerLoop = 0; outerLoop < FUNCTIONTOKEN.size(); outerLoop++){
-			for (int innerLoop = 0 ; innerLoop < FUNCTIONTOKEN.get(outerLoop).size(); innerLoop++){
-				if (FUNCTIONTOKEN.get(outerLoop).get(innerLoop) == Token.IDENTIFIER_VARIABLE){
+			for (int innerLoop = 0 ; innerLoop < FUNCTIONTOKEN[outerLoop].size(); innerLoop++){
+				if (FUNCTIONTOKEN[outerloop][innerLoop] == Token.IDENTIFIER_VARIABLE){
 					while (allTokens.top() == Token.IDENTIFIER_VARIABLE){
 						funcTree.AddChild(Tree<Token>(allTokens.top()));
+						usedTokens.push(allTokens.top());
 						allTokens.pop();
 						if (allTokens.top() == Token.OPERATOR_COMMA){
+							usedTokens.push(allTokens.top());
 							allTokens.pop();
 						}
 					}
-				}else if (FUNCTIONTOKEN.get(outerLoop).get(innerLoop) == Token.STATEMENT){
-					funcTree.AddChild(Statements(&allTokens));
-				}else if (allTokens.top().type == FUNCTIONTOKEN.get(outerLoop).get(innerLoop)){
+					continue;
+				}else if (FUNCTIONTOKEN[outerloop][innerloop] == Token.STATEMENT){
+					Tree<Token> tempTree = Statements(allTokens);
+					funcTree.AddChild(tempTree);
+				}else if (allTokens.top().type == FUNCTIONTOKEN[outerloop][innerloop]){
 					//check to see how this works
-					funcTree.AddChild(Tree<Token>(allTokens.top()));
+					top = allTokens.top();
+					funcTree.AddChild(top);
 				}else{
 					break;
 				}
 				allTokens.pop();
+			}
+			if (allTokens.size() != 0){
+				
 			}
 			//Add correction to see if it fails.
 		}
@@ -191,7 +201,7 @@ ExpB -> OPERATOR_PLUS . ExpNB |
 		Tree<Token> expB();
 		Token top; //not sure how token will be initialized
 		for (int outerLoop = 0; outerLoop < EXPBTOKEN.size(); outerLoop++) {
-			for (int innerLoop = 0; innerLoop < EXPBTOKEN.get(outerLoop).size(); innerLoop++) {
+			for (int innerLoop = 0; innerLoop < EXPBTOKEN.[outerLoop].size(); innerLoop++) {
 				if (allTokens.size() > 0 && EXPBTOKEN[outerloop][innerloop] == TokenType.EXPRESSIONNB) {
 					expB.addChild(expressionNonBinary(&allTokens));
 					return expB;
@@ -223,7 +233,7 @@ ExpNB -> IDENTIFIER_VARIABLE . ExpB |
 		Token top; //not sure how token will be initialized
 
 		for (int outerLoop = 0; outerLoop < EXPNBTOKEN.size(); outerloop++) {
-			for (int innerLoop = 0; innerLoop < EXPNBTOKEN.get(outerLoop).size();innerloop++) {
+			for (int innerLoop = 0; innerLoop < EXPNBTOKEN[outerloop].size();innerloop++) {
 				if (allTokens.size() > 0 && EXPBTOKEN[outerloop][innerloop] == TokenType.EXPRESSIONB) {
 					expNB.addChild(expressionBinary(&allTokens));
 					return expNB; //because ExpB is always at the end of ExpNB
