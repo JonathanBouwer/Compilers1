@@ -4,6 +4,7 @@
 
 #include "tree.h"
 #include "lexer.cpp"
+#include "parser.cpp"
 
 void printPrettyTestTree() {
     Tree<std::string> tree1("Element 1");
