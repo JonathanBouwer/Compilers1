@@ -1,38 +1,29 @@
 #pragma once
 #include <vector>
-#include <iostream>
+#include <fstream>
 #include <sstream>
 #include <string>
 
-/* Constant strings representing line shapes, uses wstring to support Box Drawing Characters
+/* Constant strings representing line shapes
 ** topInit = "├───"
 ** topPre  = "│   "
 ** botInit = "└───"
 ** botPre  = "    "
 */
-const std::wstring topInitPrefix = L"\u251C\u2500\u2500\u2500";
-const std::wstring topPrefix = L"\u2502    ";
-const std::wstring botInitPrefix = L"\u2514\u2500\u2500\u2500";
-const std::wstring botPrefix = L"    ";
-
-template <typename T>
-std::wstring toWString(T s) {
-    std::stringstream ss;
-    ss << s;
-    std::string treeValue = ss.str();
-    return std::wstring(treeValue.begin(), treeValue.end());
-}
+const std::string topInitPrefix = "├───";
+const std::string topPrefix = "│   ";
+const std::string botInitPrefix = "└───";
+const std::string botPrefix = "    ";
 
 template <typename T>
 class Tree {
     private:
         std::vector<Tree<T>> children;
-        Tree<T>* parent;
         T value;
     public:
-        Tree():value(""), parent(NULL) {}
+        Tree():value("") {}
 
-        Tree(T val) : value(val), parent(NULL) {}
+        Tree(T val) : value(val) {}
 
         Tree(const Tree& other) : value(other.value),
                                   children(other.children) {}
@@ -54,37 +45,33 @@ class Tree {
 
         void addChild(const Tree& child) {
             children.push_back(child);
-            std::cout << "vector size " << children.size() << std::endl;
         }
-
-        friend std::wostream& operator<<(std::wostream& out, const Tree<T>& tree) {
+        
+        void printToFile(const std::string& filename) {
+            std::ofstream outputFile(filename, std::ofstream::binary);
+            outputFile << *this;
+            outputFile.close();
+        }
+        
+        friend std::ostream& operator<<(std::ostream& out, const Tree<T>& tree) {
             out << prettyPrint(tree);
             return out;
         }
-
-        friend std::wstring prettyPrint(const Tree<T>& tree,
-                                        std::wstring initialPrefix = L"",
-                                        std::wstring prefix = L"") {
-            std::wstringstream output;
-           // std::cout << "Went in" <<std::endl;
-            output << initialPrefix << toWString<T>(tree.value)  << L"\n";
+        
+        friend std::string prettyPrint(const Tree<T>& tree, 
+                                        std::string initialPrefix = "", 
+                                        std::string prefix = "") {
+            std::stringstream output;
+            output << initialPrefix << tree.value  << "\n";
             if (tree.children.size() == 0) return output.str();
-            //std::cout << "After if" << std::endl;
+            
             int lastChildIndex = tree.children.size() - 1;
-            std::cout << "Tree broke with child size" <<lastChildIndex << std::endl;
-            if (lastChildIndex < 1000){
-                for (int i = 0; i < lastChildIndex; i++) {
-            //        std::cout << "Got in here 1" << std::endl;
-                    Tree<T> child = tree.children[i];
-                    //std::cout << child->value << std::endl;
-            //        std::cout << "Got in here 2" << std::endl;
-                    output << prettyPrint(child, prefix + topInitPrefix, prefix + topPrefix);
-                }
-
-            //    std::cout << "Got to here" << std::endl;
-                Tree<T> lastChild = tree.children[lastChildIndex];
-                output << prettyPrint(lastChild, prefix + botInitPrefix, prefix + botPrefix);
+            for (int i = 0; i < lastChildIndex; i++) {
+                Tree<T> child = tree.children[i];
+                output << prettyPrint(child, prefix + topInitPrefix, prefix + topPrefix);
             }
+            Tree<T> lastChild = tree.children[lastChildIndex];
+            output << prettyPrint(lastChild, prefix + botInitPrefix, prefix + botPrefix);
             return output.str();
         }
 };

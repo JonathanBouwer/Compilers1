@@ -1,44 +1,48 @@
+#include <fstream>
 #include <iostream>
 #include <string>
+
 #include "tree.h"
-
-#ifdef _WIN32
-#include <fcntl.h>
-#include <io.h>
-#endif
-
-void setupWindowsWideChar() {
-    #ifdef _WIN32
-    _setmode(_fileno(stdout), _O_WTEXT);
-    #endif
-}
+#include "lexer.cpp"
 
 void printPrettyTestTree() {
-	Tree<std::string> tree1("Element 1");
-	Tree<std::string> tree2("Element 2");
-	Tree<std::string> tree3("Element 3");
-	Tree<std::string> tree4("Element 4");
-	Tree<std::string> tree5("Element 5");
-	Tree<std::string> tree6("Element 6");
-	Tree<std::string> tree7("Element 7");
-	Tree<std::string> tree8("Element 8");
+    Tree<std::string> tree1("Element 1");
+    Tree<std::string> tree2("Element 2");
+    Tree<std::string> tree3("Element 3");
+    Tree<std::string> tree4("Element 4");
+    Tree<std::string> tree5("Element 5");
+    Tree<std::string> tree6("Element 6");
+    Tree<std::string> tree7("Element 7");
+    Tree<std::string> tree8("Element 8");
 
-	tree1.addChild(tree2);
-	tree1.addChild(tree7);
-	tree2.addChild(tree3);
-	tree2.addChild(tree4);
-	tree2.addChild(tree6);
-	tree4.addChild(tree5);
-	tree7.addChild(tree8);
+    tree4.addChild(tree5);
+    tree2.addChild(tree3);
+    tree2.addChild(tree4);
+    tree2.addChild(tree6);
+    tree7.addChild(tree8);
+    tree1.addChild(tree7);
+    tree1.addChild(tree2);
 
-	std::wcout << tree1;
+    tree1.printToFile("output.txt");
+}
+
+void printPrettyTestTokenStream() {
+    std::ofstream outputFile("output.txt", std::ofstream::binary | std::ofstream::app);
+    try {
+        auto s = tokenizeFile("sample/Functions.ys");
+        while (!s.empty()) {
+            outputFile << s.top() << std::endl;
+            s.pop();
+        }
+    } catch(const string& s) {
+        outputFile << s << std::endl;
+    }
+
+    outputFile.close();
 }
 
 int main(int argc, char** argv) {
-	setupWindowsWideChar();
-
-	//call to function to test pretty tree printing
-	printPrettyTestTree();
-
+    printPrettyTestTree();
+    printPrettyTestTokenStream();
     return 0;
 }

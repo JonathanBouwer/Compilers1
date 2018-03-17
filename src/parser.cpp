@@ -7,6 +7,7 @@
 using namespace std;
 
 class Parser{
+    /*
 	enum TokenType {
 		IDENTIFIER_FUNCTION,
 		IDENTIFIER_VARIABLE,
@@ -52,7 +53,8 @@ class Parser{
 		EXPRESSIONB,
 		PARAMS,
 	};
-
+    */
+    
 	/*
 	ExpNB -> IDENTIFIER_VARIABLE . ExpB |
 			 LITERAL_INTEGER . ExpB |
