@@ -122,16 +122,20 @@ Tree<Token> lib(stack<Token> &allTokens)   {
 /*
 Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenifier_Variable* . Seperator_Right_Paren . Keyword_Then . Statement . Keyword_You_must
 */
-	Tree<Token> functions(stack<Token> &allTokens){
-		Tree<Token> funcTree();
-		stack<Token> usedTokens;
+	void functions(stack<Token> &allTokens, Tree<Token> &parentTree){
 		Token top;
 		for (int outerLoop = 0; outerLoop < FUNCTIONTOKEN.size(); outerLoop++){
+			queue<Tree<Token> > usedTrees ;
+			stack<Token> usedTokens;
+			bool allPassed = true;
 			for (int innerLoop = 0 ; innerLoop < FUNCTIONTOKEN[outerLoop].size(); innerLoop++){
 				if (FUNCTIONTOKEN[outerloop][innerLoop] == Token.IDENTIFIER_VARIABLE){
-					while (allTokens.top() == Token.IDENTIFIER_VARIABLE){
-						funcTree.AddChild(Tree<Token>(allTokens.top()));
+					while (allTokens.size() != 0 && allTokens.top() == Token.IDENTIFIER_VARIABLE){
+						//funcTree.AddChild(Tree<Token>(allTokens.top()));
 						usedTokens.push(allTokens.top());
+						Token temp = allTokens.top();
+						Tree<Token> temp2(temp);
+						usedTrees.push(temp2) ;
 						allTokens.pop();
 						if (allTokens.top() == Token.OPERATOR_COMMA){
 							usedTokens.push(allTokens.top());
@@ -139,24 +143,45 @@ Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenif
 						}
 					}
 					continue;
-				}else if (FUNCTIONTOKEN[outerloop][innerloop] == Token.STATEMENT){
-					Tree<Token> tempTree = Statements(allTokens);
-					funcTree.AddChild(tempTree);
+				}else if (allTokens.size() != 0 && FUNCTIONTOKEN[outerloop][innerloop] == Token.STATEMENT){
+					//Tree<Token> tempTree = Statements(allTokens);
+					//funcTree.AddChild(tempTree);
+					//usedTokens.push(allTokens.top());
+					// 
+					//TODO Here is where we have to add the placeholder statement call 
+					//
+					Tree<Token> statementConverter(/* Change this to be placeholder */allTokens.top());
+					//allTokens.pop();
+					statements(allTokens, statementConverter);
+					usedTrees.push(statementConverter) ;
 				}else if (allTokens.top().type == FUNCTIONTOKEN[outerloop][innerloop]){
 					//check to see how this works
-					top = allTokens.top();
-					funcTree.AddChild(top);
+					Token temp = allTokens.top();
+					Tree<Token> temp2(temp);
+					usedTrees.push(temp2) ;
+					//top = allTokens.top();
+					//funcTree.AddChild(top);
 				}else{
+					allPassed = false;
 					break;
 				}
-				allTokens.pop();
+				if (allTokens.size() != 0){
+					allTokens.pop();
+				}
 			}
-			if (allTokens.size() != 0){
-				
+			if (allPassed){
+				while (usedTrees.size() >0){
+					parentTree.addChild(usedTrees.front());
+					usedTrees.pop();
+					return;
+				}
 			}
 			//Add correction to see if it fails.
 		}
-		return funcTree;
+		throw string("Failure at character %s, row %d, column %d.
+							This is why you fail",
+							top.literal, top.row, top.column);
+		
 	}
 /*
 Statements->Keyword_Then . Statement* . Keyword_You_Must |
@@ -166,24 +191,75 @@ Statements->Keyword_Then . Statement* . Keyword_You_Must |
 			Keyword_Let . Identifier_Variable . Operator_Be . Expression |
 			Expression . Seperator_Semicolon
 */
-	Tree<Token> statements(stack<Token> &allTokens){
-		Tree<Token> statsTree();/*
-		for (int outerLoop = 0; outerLoop < FUNCTIONTOKEN.size(); outerLoop++){
-			for (int innerLoop = 0 ; innerLoop < FUNCTIONTOKEN.get(outerLoop).size(); innerLoop++){
-				if (FUNCTIONTOKEN.get(outerLoop).get(innerLoop) == Token.STATEMENT){
-					funcTree.AddChild(Statements(&allTokens));
-				}
-				if (allTokens.top().type == FUNCTIONTOKEN.get(outerLoop).get(innerLoop)){
+	void statements(stack<Token> &allTokens,Tree<Token> &parentTree){
+		Token top;
+		for (int outerLoop = 0; outerLoop < STATEMENTOKEN.size(); outerLoop++){
+			queue<Tree<Token> > usedTrees ;
+			stack<Token> usedTokens;
+			bool allPassed = true;
+			for (int innerLoop = 0 ; innerLoop < STATEMENTOKEN[outerLoop].size(); innerLoop++){
+				if (allTokens.size() != 0 && STATEMENTOKEN[outerloop][innerloop] == Token.STATEMENT){
+					//Tree<Token> tempTree = Statements(allTokens);
+					//funcTree.AddChild(tempTree);
+					if (FUNCTIONTOKEN[outerloop][innerLoop] == Token.STATEMENT){
+						while (allTokens.size() != 0 && allTokens.top() == Token.STATEMENT){
+							//funcTree.AddChild(Tree<Token>(allTokens.top()));
+							// 
+							//TODO Here is where we have to add the placeholder statement call 
+							//
+							Tree<Token> statementConverter(/* Change this to be placeholder */allTokens.top());
+							//allTokens.pop();
+							statements(allTokens, statementConverter);
+							usedTrees.push(statementConverter) ;
+
+							//usedTokens.push(allTokens.top());
+						//	Token temp = allTokens.top();
+							//Tree<Token> temp2(temp);
+				//			usedTrees.push(temp2) ;
+							//allTokens.pop();
+							if (allTokens.top() == Token.OPERATOR_COMMA){
+								usedTokens.push(allTokens.top());
+								allTokens.pop();
+							}
+						}
+					continue;
+				}else if (allTokens.size() != 0 && STATEMENTOKEN[outerloop][innerLoop] == Token.EXPRESSIONNB){
+					//usedTokens.push(allTokens.top());
+					// 
+					//TODO Here is where we have to add the placeholder expression call 
+					//
+					Tree<string> exprNB(/* Change this to be placeholder */allTokens.top());
+					//allTokens.pop();
+					EXPRESSIONNB(allTokens, exprNB);
+					usedTrees.push(exprNB) ;
+				}else if (allTokens.size() != 0 && allTokens.top().type == STATEMENTOKEN[outerloop][innerloop]){
 					//check to see how this works
-					funcTree.AddChild(Tree<Token>(FUNCTIONTOKEN.get(outerLoop).get(innerLoop)));
+					Token temp = allTokens.top();
+					Tree<Token> temp2(temp);
+					usedTrees.push(temp2) ;
+					//top = allTokens.top();
+					//funcTree.AddChild(top);
 				}else{
+					allPassed = false;
 					break;
+				}
+				if (allTokens.size()  ==0){
+					allTokens.pop();
+				}
+			}
+			if (allPassed){
+				while (usedTrees.size() >0){
+					parentTree.addChild(usedTrees.front());
+					usedTrees.pop();
+					return;
 				}
 			}
 			//Add correction to see if it fails.
 		}
-		return funcTree;*/
-		return statsTree;
+		throw string("Failure at character %s, row %d, column %d.
+							This is why you fail",
+							top.literal, top.row, top.column);
+		
 	}
 /*
 ExpB -> OPERATOR_PLUS . ExpNB |
