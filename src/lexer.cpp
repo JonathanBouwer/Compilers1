@@ -67,7 +67,7 @@ int findNextMatchingChar(const string& input, int column, char c, int row) {
         ss << row << ":" << column << " was never closed\n";
         throw ss.str();
     }
-    return pos;
+    return pos - column;
 }
 
 /*

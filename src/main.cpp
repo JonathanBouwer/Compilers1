@@ -29,7 +29,7 @@ void printPrettyTestTree() {
 void printPrettyTestTokenStream() {
     std::ofstream outputFile("output.txt", std::ofstream::binary | std::ofstream::app);
     try {
-        auto s = tokenizeFile("sample/Functions.ys");
+        auto s = tokenizeFile("sample/HelloWorld.ys");
         while (!s.empty()) {
             outputFile << s.top() << std::endl;
             s.pop();
