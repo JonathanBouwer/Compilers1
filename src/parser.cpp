@@ -56,7 +56,7 @@ public:
 		PARAMS,
 	};
     */
-    
+
 	/*
 	ExpNB -> IDENTIFIER_VARIABLE . ExpB |
 			 LITERAL_INTEGER . ExpB |
@@ -277,6 +277,7 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 				expressionNonBinary(allTokens, exprNB);
 				cout << "STATEMENT : expression made " << endl;
 				usedTrees.push(exprNB) ;
+				cout << "ExprNB : " << exprNB << endl;
 			}else if (allTokens.size() != 0 && allTokens.top().type == STATEMENTOKEN[outerLoop][innerLoop]){
 				//check to see how this works
 				cout << "STATEMENT : Matched token " << endl;
@@ -314,7 +315,7 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 	/*throw string("Failure at character %s, row %d, column %d.
 						This is why you fail",
 						top.literal, top.row, top.column);*/
-	
+
 
 	}
 	throw string("Error in code");
@@ -341,10 +342,10 @@ void expressionBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 				expressionNonBinary(allTokens, expressionNBTree);
 				usedTrees.push(expressionNBTree);
 				// commented out because what if things dont match down stream and then its on the parent
-				//while (usedTree.size() > 0) { //because expB always ends on ExpNB
-				//	parentTree.addChild(usedTrees.front());
-				//	usedTrees.pop();
-				//}
+				while (usedTrees.size() > 0) { //because expB always ends on ExpNB
+					parentTree.addChild(usedTrees.front());
+					usedTrees.pop();
+				}
 				return;
 			} else {
 				Token top = allTokens.top();
@@ -374,33 +375,40 @@ ExpNB -> IDENTIFIER_VARIABLE . ExpB |
 		 KEYWORD_EXECUTE . IDENTIFIER_FUNCTION . SEPARATOR_LEFT_PAREN . Params . SEPARATOR_RIGHT_PAREN |
 */
 void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
-	queue<Tree<string> > usedTrees;
 	stack<Token> usedTokens;
-	cout << "ExpressionNonBinary : expression start " << endl;	
+	queue<Tree<string> > usedTrees;
+	cout << "ExpressionNonBinary : expression start " << endl;
 	for (int outerLoop = 0; outerLoop < EXPNBTOKEN.size(); outerLoop++) {
 		cout << "ExpressionNonBinary : outerloop called " << outerLoop << endl;
 		for (int innerLoop = 0; innerLoop < EXPNBTOKEN[outerLoop].size();innerLoop++) {
 			cout << "ExpressionNonBinary : innerloop called " << innerLoop << endl;
-			if (allTokens.size() > 0 && EXPBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONB) {
+			if (allTokens.size() > 0 && EXPNBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONB) {
+                cout << "Into EXPB check" << endl;
 				Token exprTokBi = {TokenType::EXPRESSIONB, "EXPRESSIONB", 0,0};
 				Tree<string> expressionBTree(exprTokBi.literal);
 				expressionBinary(allTokens,expressionBTree);
 				usedTrees.push(expressionBTree);
-
-				while (usedTrees.size() > 0) { //because ExpB is always last token in ExpNB
+                cout << "Done with expB" << endl;
+                Token next = allTokens.top();
+                if (innerLoop == EXPNBTOKEN[outerLoop].size()-1) { //meaning that the end of this EXNB has been reached
+				while (usedTrees.size() > 0) {
 					parentTree.addChild(usedTrees.front());
 					usedTrees.pop();
 				}
 				return;
-			} else if (allTokens.size() > 0 && EXPBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONNB) {
+                }
+			} else if (allTokens.size() > 0 && EXPNBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONNB) {
+				cout << "Into EXPNB check" << endl;
 				Token exprTokNB = {TokenType::EXPRESSIONNB, "EXPRESSIONNB", 0,0};
 				Tree<string> expressionNBTree(exprTokNB.literal);
 				usedTrees.push(expressionNBTree);
-			} else if (allTokens.size() > 0 && EXPBTOKEN[outerLoop][innerLoop] == TokenType::PARAMS) { //checking parameters
+			} else if (allTokens.size() > 0 && EXPNBTOKEN[outerLoop][innerLoop] == TokenType::PARAMS) { //checking parameters
+                 cout << "Into PARAMS check" << endl;
 				if (allTokens.top().type != TokenType::SEPARATOR_RIGHT_PAREN) {
 					Token paramTok = {TokenType::PARAMS,"PARAMS",0,0};
 					Tree<string> paramTree(paramTok.literal);
 					expressionNonBinary(allTokens,paramTree);
+                    cout << "out of ExpNB in PARAMS" << endl;
 					usedTrees.push(paramTree);
 					while (allTokens.top().type != TokenType::SEPARATOR_RIGHT_PAREN) {
 						Token top = allTokens.top();
@@ -420,15 +428,21 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 					}
 					Token top = allTokens.top();
 					usedTokens.push(top);
+                    Tree<string> rightParenTree(top.literal);
+                    usedTrees.push(rightParenTree);
 					allTokens.pop();
+					cout << "Got to line 433, usedTrees size: " << usedTrees.size() << endl;
 					while (usedTrees.size() > 0) { //because right paren is always at end of ExpNB
 						parentTree.addChild(usedTrees.front());
+						cout << "added child to parenttree : " << usedTrees.front() << endl;
 						usedTrees.pop();
 					}
 					return;
 				} else {
 					Token top = allTokens.top();
 					usedTokens.push(top);
+                    Tree<string> rightParenTree(top.literal);
+                    usedTrees.push(rightParenTree);
 					allTokens.pop();
 					while (usedTrees.size() > 0) { //because right paren is always at end of ExpNB
 						parentTree.addChild(usedTrees.front());
@@ -451,6 +465,9 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 						top.value, top.row, top.column);*/
 						throw string("Error in code");
 					} else {
+						while (usedTrees.size() > 0) {
+							usedTrees.pop();
+						}
 						break;
 					}
 				}

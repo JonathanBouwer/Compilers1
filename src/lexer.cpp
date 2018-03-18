@@ -42,10 +42,10 @@ int nextTokenLength(const string& input, int column, int row) {
                 break;
             }
         }
-    }        
+    }
     --tokenLength;
-       
-    // If no token is found throw an error 
+
+    // If no token is found throw an error
     if (tokenLength == 0) {
         stringstream ss;
         ss << "Lexing Error: Unidentified token at " << row << ":" << column+1;
@@ -67,7 +67,7 @@ int findNextMatchingChar(const string& input, int column, char c, int row) {
         ss << row << ":" << column << " was never closed\n";
         throw ss.str();
     }
-    return pos;
+    return pos - column;
 }
 
 /*
@@ -85,7 +85,7 @@ stack<Token> tokenize(const string& input) {
         // Loop through current line
         while (column < currentLine.length()) {
             int tokenLength = nextTokenLength(currentLine, column, row);
-            
+
             // Parse token and add it to the tree
             auto tokenStart = currentLine.begin() + column;
             auto tokenEnd = tokenStart + tokenLength;
@@ -95,14 +95,14 @@ stack<Token> tokenize(const string& input) {
                     if (matcher.type == WHITESPACE) {
                         break;
                     }
-                    
+
                     // Literal Strings and Chars require end quotes
                     if (matcher.type == LITERAL_STRING) {
                         tokenLength += findNextMatchingChar(currentLine, column, '"', row);
                     } else if (matcher.type == LITERAL_CHAR) {
                         tokenLength += findNextMatchingChar(currentLine, column, '\'', row);
                     }
-                    
+
                     // Add Token to stream
                     Token token;
                     token.type = matcher.type;
@@ -116,7 +116,7 @@ stack<Token> tokenize(const string& input) {
             column += tokenLength;
         }
     }
-    
+
     return stack<Token>(deque<Token>(tokenStream.rbegin(), tokenStream.rend()));
 }
 
