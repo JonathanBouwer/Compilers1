@@ -30,15 +30,24 @@ void printPrettyTestTree() {
 void printPrettyTestTokenStream() {
     std::ofstream outputFile("output.txt", std::ofstream::binary | std::ofstream::app);
     try {
-        auto s = tokenizeFile("sample/Functions.ys");
-        while (!s.empty()) {
-            outputFile << s.top() << std::endl;
-            s.pop();
+        auto s = tokenizeFile("sample/tesProg.ys");
+        // while (!s.empty()) {
+        //     outputFile << s.top() << std::endl;
+        //     s.pop();
+        // }
+        if (s.top().type != TokenType::KEYWORD_PRETEXT){
+            throw string("Error is file");
         }
+        Tree<string> printTree(s.top().literal);
+        s.pop();
+        Parser p;
+        std::cout << "About to go itno tree " << std::endl;
+        p.lib(s, printTree);
+        printTree.printToFile("output.txt");
     } catch(const string& s) {
         outputFile << s << std::endl;
     }
-
+    
     outputFile.close();
 }
 
