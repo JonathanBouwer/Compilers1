@@ -72,7 +72,7 @@ public:
 												  {TokenType::KEYWORD_IF , TokenType::SEPARATOR_LEFT_PAREN , TokenType::EXPRESSIONNB , TokenType::EXPRESSIONB , TokenType::SEPARATOR_RIGHT_PAREN , TokenType::STATEMENT },
 												  {TokenType::KEYWORD_DO , TokenType::STATEMENT , TokenType::KEYWORD_WHILE , TokenType::SEPARATOR_LEFT_PAREN , TokenType::EXPRESSIONNB , TokenType::EXPRESSIONB , TokenType::SEPARATOR_RIGHT_PAREN },
 												  {TokenType::KEYWORD_TRANSMIT , TokenType::EXPRESSIONNB , TokenType::EXPRESSIONB , TokenType::SEPARATOR_SEMICOLON },
-												  {TokenType::KEYWORD_LET , TokenType::IDENTIFIER_VARIABLE , TokenType::OPERATOR_BE , TokenType::EXPRESSIONNB , TokenType::EXPRESSIONB },
+												  {TokenType::KEYWORD_LET , TokenType::IDENTIFIER_VARIABLE , TokenType::OPERATOR_BE , TokenType::EXPRESSIONNB , TokenType::EXPRESSIONB, TokenType::SEPARATOR_SEMICOLON },
 												  {TokenType::EXPRESSIONNB , TokenType::EXPRESSIONB , TokenType::SEPARATOR_SEMICOLON}};
 	const vector<vector<TokenType> > LIBTOKEN = { {TokenType::FUNCTIONS, TokenType::KEYWORD_THE_END}};
 	const vector<vector<TokenType> > EXPBTOKEN = { {TokenType::OPERATOR_PLUS, TokenType::EXPRESSIONNB},
@@ -175,12 +175,18 @@ Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenif
 					//
 					//TODO Here is where we have to add the placeholder statement call
 					//
-					Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0};
-					cout << "FUNCTION : STATEMENT called "  << endl;
-					Tree<string> statementConverter(stateHolder.literal);
-					//allTokens.pop();
-					statements(allTokens, statementConverter);
-					usedTrees.push(statementConverter) ;
+					while ((allTokens.top().type != TokenType::KEYWORD_YOU_MUST) || (allTokens.top().type != TokenType::KEYWORD_FORCE)){
+						Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0};
+						cout << "top token, row, column = " << "'" << allTokens.top().literal << endl;
+						if (allTokens.top().type == TokenType::KEYWORD_YOU_MUST){
+							break;
+						}
+						cout << "FUNCTION : STATEMENT called "  << endl;
+						Tree<string> statementConverter(stateHolder.literal);
+						//allTokens.pop();
+						statements(allTokens, statementConverter);
+						usedTrees.push(statementConverter) ;
+					}
 				}else if (allTokens.top().type == FUNCTIONTOKEN[outerLoop][innerLoop]){
 					//check to see how this works
 					cout << "FUNCTION : Macthed token " << allTokens.top().literal  << endl;
@@ -237,6 +243,7 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 		bool allPassed = true;
 		for (int innerLoop = 0 ; innerLoop < STATEMENTOKEN[outerLoop].size(); innerLoop++){
 			cout << "STATEMENT : innerloop called " << innerLoop << endl;
+			cout << "top token, row, column = " << "'" << allTokens.top().literal << "'" << ", " << allTokens.top().row << ", " << allTokens.top().column << endl;
 			if (allTokens.size() != 0 && STATEMENTOKEN[outerLoop][innerLoop] == TokenType::STATEMENT){
 				//Tree<string> tempTree = Statements(allTokens);
 				//funcTree.AddChild(tempTree);
@@ -347,7 +354,9 @@ ExpB -> OPERATOR_PLUS . ExpNB |
 void expressionBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 	queue<Tree<string> > usedTrees;
 	for (int outerLoop = 0; outerLoop < EXPBTOKEN.size(); outerLoop++) {
+		cout << "EXPRESSION BINARY: Outerloop " << outerLoop << endl;
 		for (int innerLoop = 0; innerLoop < EXPBTOKEN[outerLoop].size(); innerLoop++) {
+			cout << "EXPRESSION BINARY: innerLoop " << innerLoop << endl;
 			if (allTokens.size() > 0 && EXPBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONNB) {
 				Token exprTokNB = {TokenType::EXPRESSIONNB, "EXPRESSIONNB", 0,0};
 				Tree<string> expressionNBTree(exprTokNB.literal);
@@ -425,7 +434,9 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 					Token paramTok = {TokenType::PARAMS,"PARAMS",0,0};
 					Tree<string> paramTree(paramTok.literal);
 					expressionNonBinary(allTokens,paramTree);
+					//allTokens.pop();
                     cout << "out of ExpNB in PARAMS" << endl;
+                    cout << "out of params" << allTokens.top().literal << endl;
 					usedTrees.push(paramTree);
 					while (allTokens.top().type != TokenType::SEPARATOR_RIGHT_PAREN) {
 						Token top = allTokens.top();
@@ -443,6 +454,7 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 							throw string("Error in code");
 						}
 					}
+					cout << "Got past params right" << endl;
 					Token top = allTokens.top();
 					usedTokens.push(top);
                     Tree<string> rightParenTree(top.literal);
@@ -453,7 +465,8 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 						usedTrees.pop();
 					}
 					return;
-				} else {
+				}  else {
+					cout << "Reading it the wrong way " << endl;
 					Token top = allTokens.top();
 					usedTokens.push(top);
                     Tree<string> rightParenTree(top.literal);
@@ -466,6 +479,22 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 					return;
 
 				}
+			}else if (EXPNBTOKEN[outerLoop][innerLoop] == TokenType::IDENTIFIER_VARIABLE && allTokens.top().type == TokenType::IDENTIFIER_VARIABLE) {
+				cout << "Found it was an identifer" << endl;
+				while (allTokens.size() != 0 && allTokens.top().type == TokenType::IDENTIFIER_VARIABLE){
+					cout << "Found it was an identifer isndie" << endl;
+					//funcTree.AddChild(Tree<string>(allTokens.top()));
+					usedTokens.push(allTokens.top());
+					Token temp = allTokens.top();
+					Tree<string> temp2(temp.literal);
+					usedTrees.push(temp2) ;
+					allTokens.pop();
+					if (allTokens.top().type == TokenType::OPERATOR_COMMA){
+						usedTokens.push(allTokens.top());
+						allTokens.pop();
+					}
+				}
+				continue;
 			} else {
 				Token top = allTokens.top();
 				if (top.type == EXPNBTOKEN[outerLoop][innerLoop]) {

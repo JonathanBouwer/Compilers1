@@ -6,7 +6,7 @@ you_must
 
 force order_64(j) then
     let i be j + j/2;
-    transmit execute order_Sqrt(execute order_63(i,j,5));
+    transmit execute order_Sqrt(execute order_63(i,j));
 you_must
 
 force order_65(left, right) then

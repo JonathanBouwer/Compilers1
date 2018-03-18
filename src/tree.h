@@ -53,6 +53,10 @@ class Tree {
             outputFile.close();
         }
         
+        int numberOfChildren(){
+            return children.size();
+        }
+
         friend std::ostream& operator<<(std::ostream& out, const Tree<T>& tree) {
             out << prettyPrint(tree);
             return out;
