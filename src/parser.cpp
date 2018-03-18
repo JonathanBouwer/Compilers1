@@ -69,11 +69,11 @@ public:
 
 	const vector<vector<TokenType> > FUNCTIONTOKEN = { {TokenType::KEYWORD_FORCE, TokenType::IDENTIFIER_FUNCTION, TokenType::SEPARATOR_LEFT_PAREN, TokenType::IDENTIFIER_VARIABLE, TokenType::SEPARATOR_RIGHT_PAREN, TokenType::KEYWORD_THEN, TokenType::STATEMENT ,TokenType::KEYWORD_YOU_MUST} };
 	const vector<vector<TokenType> > STATEMENTOKEN = { { TokenType::KEYWORD_THEN , TokenType::STATEMENT , TokenType::KEYWORD_YOU_MUST},
-												  {TokenType::KEYWORD_IF , TokenType::SEPARATOR_LEFT_PAREN , TokenType::EXPRESSIONNB , TokenType::SEPARATOR_RIGHT_PAREN , TokenType::STATEMENT },
-												  {TokenType::KEYWORD_DO , TokenType::STATEMENT , TokenType::KEYWORD_WHILE , TokenType::SEPARATOR_LEFT_PAREN , TokenType::EXPRESSIONNB , TokenType::SEPARATOR_RIGHT_PAREN },
-												  {TokenType::KEYWORD_TRANSMIT , TokenType::EXPRESSIONNB , TokenType::SEPARATOR_SEMICOLON },
-												  {TokenType::KEYWORD_LET , TokenType::IDENTIFIER_VARIABLE , TokenType::OPERATOR_BE , TokenType::EXPRESSIONNB },
-												  {TokenType::EXPRESSIONNB , TokenType::SEPARATOR_SEMICOLON}};
+												  {TokenType::KEYWORD_IF , TokenType::SEPARATOR_LEFT_PAREN , TokenType::EXPRESSIONNB , TokenType::EXPRESSIONB , TokenType::SEPARATOR_RIGHT_PAREN , TokenType::STATEMENT },
+												  {TokenType::KEYWORD_DO , TokenType::STATEMENT , TokenType::KEYWORD_WHILE , TokenType::SEPARATOR_LEFT_PAREN , TokenType::EXPRESSIONNB , TokenType::EXPRESSIONB , TokenType::SEPARATOR_RIGHT_PAREN },
+												  {TokenType::KEYWORD_TRANSMIT , TokenType::EXPRESSIONNB , TokenType::EXPRESSIONB , TokenType::SEPARATOR_SEMICOLON },
+												  {TokenType::KEYWORD_LET , TokenType::IDENTIFIER_VARIABLE , TokenType::OPERATOR_BE , TokenType::EXPRESSIONNB , TokenType::EXPRESSIONB },
+												  {TokenType::EXPRESSIONNB , TokenType::EXPRESSIONB , TokenType::SEPARATOR_SEMICOLON}};
 	const vector<vector<TokenType> > LIBTOKEN = { {TokenType::FUNCTIONS, TokenType::KEYWORD_THE_END}};
 	const vector<vector<TokenType> > EXPBTOKEN = { {TokenType::OPERATOR_PLUS, TokenType::EXPRESSIONNB},
 	 										  {TokenType::OPERATOR_TIMES, TokenType::EXPRESSIONNB},
@@ -153,6 +153,7 @@ Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenif
 			cout << "FUNCTION : outerloop called " << outerLoop << endl;
 			for (int innerLoop = 0 ; innerLoop < FUNCTIONTOKEN[outerLoop].size(); innerLoop++){
 				cout << "FUNCTION : innerloop called " << innerLoop << endl;
+				cout << "top token, row, column = " << "'" << allTokens.top().literal << "'" << ", " << allTokens.top().row << ", " << allTokens.top().column << endl;
 				if (FUNCTIONTOKEN[outerLoop][innerLoop] == TokenType::IDENTIFIER_VARIABLE){
 					while (allTokens.size() != 0 && allTokens.top().type == TokenType::IDENTIFIER_VARIABLE){
 						//funcTree.AddChild(Tree<string>(allTokens.top()));
@@ -186,22 +187,24 @@ Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenif
 					Token temp = allTokens.top();
 					Tree<string> temp2(temp.literal);
 					usedTrees.push(temp2) ;
+					usedTokens.push(temp);
+					allTokens.pop();
 					//top = allTokens.top();
 					//funcTree.AddChild(top);
 				}else{
 					allPassed = false;
 					break;
 				}
-				if (allTokens.size() != 0){
-					allTokens.pop();
-				}
+			//	if (allTokens.size() != 0){ //@Dylan: I commented this out and added the pop on line 191, because it was popping the "you_must" off the stack after completing a statement, but before the next loop could match with it
+		//			allTokens.pop();
+			//	}
 			}
 			if (allPassed){
 				while (usedTrees.size() >0){
 					parentTree.addChild(usedTrees.front());
 					usedTrees.pop();
-					return;
 				}
+				return;
 			}else{
 				while (usedTokens.size() != 0) {
 					allTokens.push(usedTokens.top());
@@ -218,11 +221,11 @@ Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenif
 	}
 /*
 Statements->Keyword_Then . Statement* . Keyword_You_Must |
-			Keyword_If . Seperator_Left_Paren . ExpressionNonBinary . Seperator_Right_Paren . Statement |
-			Keyword_Do . Statement . Keyword_While . Seperator_Left_Paren . Expression . Separtor_Right_Paren |
-			Keyword_Transmit . Expression . Seperator_Semicolon |
-			Keyword_Let . Identifier_Variable . Operator_Be . Expression |
-			Expression . Seperator_Semicolon
+			Keyword_If . Seperator_Left_Paren . ExpressionNonBinary . ExpressionBinary . Seperator_Right_Paren . Statement |
+			Keyword_Do . Statement . Keyword_While . Seperator_Left_Paren . ExpressionNonBinary. ExpressionBinary . Separtor_Right_Paren |
+			Keyword_Transmit . ExpressionNonBinary . ExpressionBinary . Seperator_Semicolon |
+			Keyword_Let . Identifier_Variable . Operator_Be . ExpressionNonBinary . ExpressionBinary |
+			ExpressionNonBinary . ExpressionBinary . Seperator_Semicolon
 */
 void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 	Token top;
@@ -271,20 +274,28 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 					//TODO Here is where we have to add the placeholder expression call
 					//
 				Token exprTokNB = {TokenType::EXPRESSIONNB, "EXPRESSIONNB", 0,0};
-				cout << "STATEMENT : Calling expression " << endl;
+				cout << "STATEMENT : Calling expression NonBinary " << endl;
 				Tree<string> exprNB(exprTokNB.literal);
 				//allTokens.pop();
 				expressionNonBinary(allTokens, exprNB);
-				cout << "STATEMENT : expression made " << endl;
+				cout << "STATEMENT : expression NonBinary made " << endl;
 				usedTrees.push(exprNB) ;
-				cout << "ExprNB : " << exprNB << endl;
-			}else if (allTokens.size() != 0 && allTokens.top().type == STATEMENTOKEN[outerLoop][innerLoop]){
+			} else if (allTokens.size() != 0 && STATEMENTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONB) {
+				Token exprTokB = {TokenType::EXPRESSIONB, "EXPRESSIONB",0,0};
+				cout << "STATEMENT : Calling expression Binary " << endl;
+				Tree<string> exprB(exprTokB.literal);
+				expressionBinary(allTokens,exprB);
+				cout << "STATEMENT : expression Binary made " << endl;
+				usedTrees.push(exprB) ;
+			}
+			else if (allTokens.size() != 0 && allTokens.top().type == STATEMENTOKEN[outerLoop][innerLoop]){
 				//check to see how this works
 				cout << "STATEMENT : Matched token " << endl;
 				Token temp = allTokens.top();
 				usedTokens.push(temp);
 				Tree<string> temp2(temp.literal);
 				usedTrees.push(temp2) ;
+				allTokens.pop();
 				//top = allTokens.top();
 				//funcTree.AddChild(top);
 			}else{
@@ -298,12 +309,13 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 			}
 		}
 		cout << "STATEMENT : Exit innerloop " << endl;
+		cout << "top token, row, column = " << "'" << allTokens.top().literal << "'" << ", " << allTokens.top().row << ", " << allTokens.top().column << endl;
 		if (allPassed){
 			while (usedTrees.size() >0){
 				parentTree.addChild(usedTrees.front());
 				usedTrees.pop();
-				return;
 			}
+			return;
 		}else{
 			cout << "STATEMENT : BACKTRACKING " << endl;
 			while (usedTokens.size() != 0) {
@@ -350,6 +362,7 @@ void expressionBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 			} else {
 				Token top = allTokens.top();
 				if (top.type == EXPBTOKEN[outerLoop][innerLoop]) {
+					cout << "EXPRESSION BINARY: matched token in EXPB" << endl;
 					allTokens.pop();
 					Tree<string> Operator(top.literal);
 					usedTrees.push(Operator);
@@ -377,18 +390,21 @@ ExpNB -> IDENTIFIER_VARIABLE . ExpB |
 void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 	stack<Token> usedTokens;
 	queue<Tree<string> > usedTrees;
-	cout << "ExpressionNonBinary : expression start " << endl;
+	cout << "EXPRESSION NONBINARY : expression start " << endl;
 	for (int outerLoop = 0; outerLoop < EXPNBTOKEN.size(); outerLoop++) {
-		cout << "ExpressionNonBinary : outerloop called " << outerLoop << endl;
+		cout << "EXPRESSION NONBINARY : outerloop called " << outerLoop << endl;
 		for (int innerLoop = 0; innerLoop < EXPNBTOKEN[outerLoop].size();innerLoop++) {
-			cout << "ExpressionNonBinary : innerloop called " << innerLoop << endl;
+			cout << "EXPRESSION NONBINARY : 		innerloop called " << innerLoop << endl;
+			cout << "top token, row, column = " << "'" << allTokens.top().literal << "'" << ", " << allTokens.top().row << ", " << allTokens.top().column << endl;
 			if (allTokens.size() > 0 && EXPNBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONB) {
                 cout << "Into EXPB check" << endl;
 				Token exprTokBi = {TokenType::EXPRESSIONB, "EXPRESSIONB", 0,0};
 				Tree<string> expressionBTree(exprTokBi.literal);
 				expressionBinary(allTokens,expressionBTree);
-				usedTrees.push(expressionBTree);
-                cout << "Done with expB" << endl;
+				if (expressionBTree.numberOfChildren() > 0) {
+					usedTrees.push(expressionBTree);
+				}
+                cout << "Done with EXPB" << endl;
                 Token next = allTokens.top();
                 if (innerLoop == EXPNBTOKEN[outerLoop].size()-1) { //meaning that the end of this EXNB has been reached
 				while (usedTrees.size() > 0) {
@@ -401,6 +417,7 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 				cout << "Into EXPNB check" << endl;
 				Token exprTokNB = {TokenType::EXPRESSIONNB, "EXPRESSIONNB", 0,0};
 				Tree<string> expressionNBTree(exprTokNB.literal);
+				expressionNonBinary(allTokens, expressionNBTree);
 				usedTrees.push(expressionNBTree);
 			} else if (allTokens.size() > 0 && EXPNBTOKEN[outerLoop][innerLoop] == TokenType::PARAMS) { //checking parameters
                  cout << "Into PARAMS check" << endl;
@@ -431,10 +448,8 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
                     Tree<string> rightParenTree(top.literal);
                     usedTrees.push(rightParenTree);
 					allTokens.pop();
-					cout << "Got to line 433, usedTrees size: " << usedTrees.size() << endl;
 					while (usedTrees.size() > 0) { //because right paren is always at end of ExpNB
 						parentTree.addChild(usedTrees.front());
-						cout << "added child to parenttree : " << usedTrees.front() << endl;
 						usedTrees.pop();
 					}
 					return;
@@ -458,6 +473,13 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 					usedTrees.push(temp);
 					usedTokens.push(top);
 					allTokens.pop();
+					if (innerLoop == EXPNBTOKEN[outerLoop].size()-1) {//end of language reached
+						while (usedTrees.size() > 0) {
+							parentTree.addChild(usedTrees.front());
+							usedTrees.pop();
+						}
+						return;
+					}
 				} else {
 					if (outerLoop == EXPNBTOKEN.size()-1) {
 						/*throw string ("Failure at character %s, row %d, column %d.
