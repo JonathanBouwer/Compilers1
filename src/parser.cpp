@@ -43,30 +43,34 @@ public:
 /*
 lib -> KEYWORD_PRETEXT . Function* . KEYWORD_EOF
 */
-void lib(stack<Token> &allTokens, Tree<string> &parentTree)   {
+void lib(stack<Token> &allTokens, Tree<string> &parentTree)   { //checks for initial token, then checks for functions until end-token is found
 
 	queue<Tree<string> > usedTrees;
-	if (allTokens.top().type != TokenType::KEYWORD_PRETEXT){ //checking that the the KEYWORD_PRETEXT is present
+
+	if (allTokens.top().type != TokenType::KEYWORD_PRETEXT){
         string error = "Expected the Pretext Keyword, I did. This is why you fail \n";
     	throw string(error);
     }
+
 	Token top = allTokens.top();
 	Tree<string> libTree(top.literal);
 	parentTree.addChild(libTree);
 	allTokens.pop();
 	top = allTokens.top();
-	while (allTokens.size() > 0 && allTokens.top().type != TokenType::KEYWORD_THE_END ) { //while it's not the end of the file, check for functions
+
+	while (allTokens.size() > 0 && allTokens.top().type != TokenType::KEYWORD_THE_END ) {
 		Token FuncTok = {TokenType::FUNCTIONS,"FUNCTION",0,0};
-		Tree<string> functionTree(FuncTok.literal); //make functionTree
-		functions(allTokens, functionTree); //send functionTree to the Functions function
+		Tree<string> functionTree(FuncTok.literal);
+		functions(allTokens, functionTree);
 		usedTrees.push(functionTree);
 	}
 
-	if (allTokens.top().type == TokenType::KEYWORD_THE_END) { //checks if the keyword indicating the end of file is present
+	if (allTokens.size() > 0 && allTokens.top().type == TokenType::KEYWORD_THE_END) {
 		Token top = allTokens.top();
 		allTokens.pop();
 		Tree<string> end(top.literal);
 		usedTrees.push(end);
+
 	} else { //if not, indicate the error
 		string error = "Failure. Expected another function, or the End of File keyword, I did. This is why you fail. \n";
 		throw string(error);
@@ -76,6 +80,7 @@ void lib(stack<Token> &allTokens, Tree<string> &parentTree)   {
 		parentTree.addChild(usedTrees.front());
 		usedTrees.pop();
 	}
+
 }
 
 
@@ -83,19 +88,19 @@ void lib(stack<Token> &allTokens, Tree<string> &parentTree)   {
 Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenifier_Variable* . Seperator_Right_Paren . Keyword_Then . Statement . Keyword_You_must
 */
 void functions(stack<Token> &allTokens, Tree<string> &parentTree){
-	Token top; // top used to hold the top token of the stack 
+	Token top; // top used to hold the top token of the stack
 	for (int outerLoop = 0; outerLoop < FUNCTIONTOKEN.size(); outerLoop++){// loops over the outer part of the FUNCTIONTOKEN vector
 		queue<Tree<string> > usedTrees ; // holds trees which have been created, if the language passes the trees will be popped into the parent tree
 		stack<Token> usedTokens; // holds used tokens, if the language fails it must be added back to the allTokens stack
 		bool allPassed = true;// used to see if tokens follow correct order of langauge
 		for (int innerLoop = 0 ; innerLoop < FUNCTIONTOKEN[outerLoop].size(); innerLoop++){
-			if (FUNCTIONTOKEN[outerLoop][innerLoop] == TokenType::IDENTIFIER_VARIABLE){ 
+			if (FUNCTIONTOKEN[outerLoop][innerLoop] == TokenType::IDENTIFIER_VARIABLE){
 				while (allTokens.size() != 0 && allTokens.top().type == TokenType::IDENTIFIER_VARIABLE){ // Since many identifier variables can come after eachother, it will go until there is one left (0..*)
 					usedTokens.push(allTokens.top()); // adds token to used tokens
 					Token temp = allTokens.top(); // creates token to add to new tree
 					Tree<string> temp2(temp.literal);
 					usedTrees.push(temp2) ; // adds newly made tree to used trees
-					allTokens.pop(); 
+					allTokens.pop();
 					if (allTokens.top().type == TokenType::OPERATOR_COMMA){ // if there is a comma there must be another identifier so pop off the comma
 						usedTokens.push(allTokens.top());
 						allTokens.pop();
@@ -163,7 +168,7 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 						while (allTokens.size() != 0 && allTokens.top().type != TokenType::KEYWORD_YOU_MUST) { // once keyword youmust is found the while loop ends
 							Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0}; // placeholder statement token
 							Tree<string> statementConverter(stateHolder.literal);
-							statements(allTokens, statementConverter); // call statements again 
+							statements(allTokens, statementConverter); // call statements again
 							if (statementConverter.numberOfChildren() > 0) { // if no statement was added dont add to the parent tree
 								usedTrees.push(statementConverter) ;
 							}
@@ -209,7 +214,7 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 				allPassed = false; // didnt match any tokens
 				break;
 			}
-			
+
 		}
 		if (allPassed){ // if everything passes then add to the parent tree
 			while (usedTrees.size() >0){
@@ -239,37 +244,51 @@ ExpB -> OPERATOR_PLUS . ExpNB |
 		OPERATOR_IS . ExpNB |
 		e
 */
-void expressionBinary(stack<Token> &allTokens, Tree<string> &parentTree){
+void expressionBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //logic for generation of an expressionBinary non-terminal
+
 	queue<Tree<string> > usedTrees;
+
 	for (int outerLoop = 0; outerLoop < EXPBTOKEN.size(); outerLoop++) {
+
 		for (int innerLoop = 0; innerLoop < EXPBTOKEN[outerLoop].size(); innerLoop++) {
-			if (allTokens.size() > 0 && EXPBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONNB) { //checks if a Non-Binary Expression is expected
+
+			if (allTokens.size() > 0 && EXPBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONNB) {
+
 				Token exprTokNB = {TokenType::EXPRESSIONNB, "EXPRESSIONNB", 0,0};
 				Tree<string> expressionNBTree(exprTokNB.literal);
-				expressionNonBinary(allTokens, expressionNBTree); //sending the new tree to expressionNonBinary to add children to it
-				usedTrees.push(expressionNBTree); //add the new tree to usedTrees
+				expressionNonBinary(allTokens, expressionNBTree);
+				usedTrees.push(expressionNBTree);
+
 				while (usedTrees.size() > 0) {
 					parentTree.addChild(usedTrees.front());
 					usedTrees.pop();
 				}
+
 				return;  //the while loop above + the return statement was added here because ExpressionNonBinary is always at the end of the ExpressionBinary grammar
+
 			} else {
+
 				Token top = allTokens.top();
-				if (top.type == EXPBTOKEN[outerLoop][innerLoop]) { //check if token matches any of the given operators
+
+				if (top.type == EXPBTOKEN[outerLoop][innerLoop]) {
 					allTokens.pop();
-					Tree<string> Operator(top.literal); //if it matches, pop the token, create a string Tree from it, and add the tree to usedTrees
+					Tree<string> Operator(top.literal);
 					usedTrees.push(Operator);
+
 				} else {
+
 					break; //no need for used stack here, since expB only 2 tokens long
 				}
 			}
 		} //didnt add a throw message here, because expB can also just be empty, i.e. next character could be a large variety of things.
 
 	}
+
 	while (usedTrees.size() > 0) {
 		parentTree.addChild(usedTrees.front());
 		usedTrees.pop();
 	}
+
 	return;
 }
 /*
@@ -280,107 +299,147 @@ ExpNB -> IDENTIFIER_VARIABLE . ExpB |
 		 SEPARATOR_LEFT_PAREN . ExpNB . SEPARATOR_RIGHT_PAREN |
 		 KEYWORD_EXECUTE . IDENTIFIER_FUNCTION . SEPARATOR_LEFT_PAREN . Params . SEPARATOR_RIGHT_PAREN |
 */
-void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
+void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //logic for generation of an expressionNonBinary non-terminal
+
 	stack<Token> usedTokens;
 	queue<Tree<string> > usedTrees;
+
 	for (int outerLoop = 0; outerLoop < EXPNBTOKEN.size(); outerLoop++) {
+
 		for (int innerLoop = 0; innerLoop < EXPNBTOKEN[outerLoop].size();innerLoop++) {
-			if (allTokens.size() > 0 && EXPNBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONB) { //checking if a Binary expression is expected
+
+			if (allTokens.size() > 0 && EXPNBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONB) {
+
 				Token exprTokBi = {TokenType::EXPRESSIONB, "EXPRESSIONB", 0,0};
 				Tree<string> expressionBTree(exprTokBi.literal);
-				expressionBinary(allTokens,expressionBTree); //sending the new tree to expressionBinary to add children to it
-				if (expressionBTree.numberOfChildren() > 0) { //if the returned expressionBinary is not empty, add the tree to usedTrees
+				expressionBinary(allTokens,expressionBTree);
+
+				if (expressionBTree.numberOfChildren() > 0) {
 					usedTrees.push(expressionBTree);
 				}
+
                 Token next = allTokens.top();
-                if (innerLoop == EXPNBTOKEN[outerLoop].size()-1) { //checking whether the end of this EXPNB has been reached
+
+                if (innerLoop == EXPNBTOKEN[outerLoop].size()-1) {
+
 				while (usedTrees.size() > 0) {
 					parentTree.addChild(usedTrees.front());
 					usedTrees.pop();
 				}
-				return;
+
+				return; //added because whenever an expressionBinary is expected, it's the end of the ExpressionNonBinary grammar
+
                 }
-			} else if (allTokens.size() > 0 && EXPNBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONNB) { //checking if a NonBinary expression is expected
+
+			} else if (allTokens.size() > 0 && EXPNBTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONNB) {
+
 				Token exprTokNB = {TokenType::EXPRESSIONNB, "EXPRESSIONNB", 0,0};
 				Tree<string> expressionNBTree(exprTokNB.literal);
 				expressionNonBinary(allTokens, expressionNBTree);
 				usedTrees.push(expressionNBTree);
-			} else if (allTokens.size() > 0 && EXPNBTOKEN[outerLoop][innerLoop] == TokenType::PARAMS) { //checking if parameters are expected
-				if (allTokens.top().type != TokenType::SEPARATOR_RIGHT_PAREN) { //following lines implement logic to check for 0, 1 or more parameters.
+
+			} else if (allTokens.size() > 0 && EXPNBTOKEN[outerLoop][innerLoop] == TokenType::PARAMS) {
+
+				if (allTokens.top().type != TokenType::SEPARATOR_RIGHT_PAREN) {
+
 					Token paramTok = {TokenType::PARAMS,"PARAMS",0,0};
 					Tree<string> paramTree(paramTok.literal);
 					expressionNonBinary(allTokens,paramTree);
+
 					while (allTokens.top().type != TokenType::SEPARATOR_RIGHT_PAREN) {
 						Token top = allTokens.top();
+
 						if (top.type == TokenType::OPERATOR_COMMA) {
 							usedTokens.push(top);
 							allTokens.pop();
 							expressionNonBinary(allTokens,paramTree);
+
 						} else {
 							string error = "Failure at character " +top.literal+", row " + to_string(top.row) + ", column "+ to_string(top.column) + ". Expected a comma or right parenthesis, I did. This is why you fail \n";
 							throw string(error);
 						}
+
 					}
+
 					usedTrees.push(paramTree);
 					Token top = allTokens.top();
 					usedTokens.push(top);
                     Tree<string> rightParenTree(top.literal);
                     usedTrees.push(rightParenTree);
 					allTokens.pop();
-					while (usedTrees.size() > 0) { //added because right parenthesis is always at end of ExpNB
+
+					while (usedTrees.size() > 0) { //added because right parenthesis is always at end of ExpNB grammar
 						parentTree.addChild(usedTrees.front());
 						usedTrees.pop();
 					}
+
 					return;
+
 				}  else {
+
 					Token top = allTokens.top();
 					usedTokens.push(top);
                     Tree<string> rightParenTree(top.literal);
                     usedTrees.push(rightParenTree);
 					allTokens.pop();
-					while (usedTrees.size() > 0) { //added because right parenthesis is always at end of ExpNB
+
+					while (usedTrees.size() > 0) {
 						parentTree.addChild(usedTrees.front());
 						usedTrees.pop();
 					}
+
 					return;
 
 				}
 			} else {
 				Token top = allTokens.top();
-				if (top.type == EXPNBTOKEN[outerLoop][innerLoop]) { //matching terminals
+
+				if (top.type == EXPNBTOKEN[outerLoop][innerLoop]) {
 					Tree<string> temp(top.literal);
 					usedTrees.push(temp);
 					usedTokens.push(top);
 					allTokens.pop();
-					if (innerLoop == EXPNBTOKEN[outerLoop].size()-1) {//checking whether the end of the grammar has been reached
+
+					if (innerLoop == EXPNBTOKEN[outerLoop].size()-1) {
+
 						while (usedTrees.size() > 0) {
 							parentTree.addChild(usedTrees.front());
 							usedTrees.pop();
 						}
+
 						return;
 					}
-				} else { //if it doesn't match
-					if (outerLoop == EXPNBTOKEN.size()-1) { //if this was the final grammar option, then nothing matches and throw an error
+
+				} else {
+
+					if (outerLoop == EXPNBTOKEN.size()-1) {
 						string error = "Failure at character " +top.literal+", row " + to_string(top.row) + ", column "+ to_string(top.column) +". Matches a non-binary expression, it does not. This is why you fail \n";
 						throw string (error);
-					} else { //if it wasn't the final grammar option, empty usedTrees and break the inner loop, effectively moving on to the next grammar option
+
+					} else {
+
 						while (usedTrees.size() > 0) {
 							usedTrees.pop();
 						}
+
 						break;
 					}
 				}
 			}
 		} //inner loop ends here
-		while (usedTokens.size() != 0) { //once inner loop ends, if it hasn't matched, deposit all the usedTokens onto the main stack again
+
+		while (usedTokens.size() != 0) {
 			allTokens.push(usedTokens.top());
 			usedTokens.pop();
 		}
+
 	} //outer loop ends here
-	while (usedTrees.size() > 0) { //adding the matched children to the parent tree
+
+	while (usedTrees.size() > 0) {
 		parentTree.addChild(usedTrees.front());
 		usedTrees.pop();
 	}
+
 	return;
 
     }
