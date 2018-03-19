@@ -30,13 +30,14 @@ void printPrettyTestTree() {
 void printPrettyTestTokenStream() {
     std::ofstream outputFile("output.txt", std::ofstream::binary | std::ofstream::app);
     try {
-        auto s = tokenizeFile("sample/Functions.ys");
+        auto s = tokenizeFile("sample/tesProg.ys");
         // while (!s.empty()) {
         //     outputFile << s.top() << std::endl;
         //     s.pop();
         // }
         if (s.top().type != TokenType::KEYWORD_PRETEXT){
-            throw string("Error is file");
+            string error = "Expected the Pretext Keyword, I did. This is why you fail \n";
+    		throw string(error);
         }
         Tree<string> printTree(s.top().literal);
         s.pop();
@@ -45,14 +46,15 @@ void printPrettyTestTokenStream() {
         p.lib(s, printTree);
         printTree.printToFile("output.txt");
     } catch(const string& s) {
+        std::ofstream outputFile("output.txt", std::ofstream::binary);
         outputFile << s << std::endl;
     }
-    
+
     outputFile.close();
 }
 
 int main(int argc, char** argv) {
-    printPrettyTestTree();
+//    printPrettyTestTree();
     printPrettyTestTokenStream();
     return 0;
 }

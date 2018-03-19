@@ -100,16 +100,6 @@ void lib(stack<Token> &allTokens, Tree<string> &parentTree)   {
 
 	queue<Tree<string> > usedTrees;
 	Token top = allTokens.top();
-	/*if (top.type = TokenType::KEYWORD_PRETEXT) {
-		Tree<string> begin(top);
-		usedTrees.push(begin);
-		allTokens.pop();
-	} else {
-		throw string("Failure on character %s at row %d, column %d.
-		Expected the Pretext keyword, I did. This is why you fail. \n",
-		 top.value, top.row, top.column);
-		throw string("Error in code");
-	}*/
 	cout << "got into the lib" << endl;
 	while (allTokens.size() > 0 && allTokens.top().type != TokenType::KEYWORD_THE_END ) {
 		Token FuncTok = {TokenType::FUNCTIONS,"FUNCTION",0,0};
@@ -128,9 +118,8 @@ void lib(stack<Token> &allTokens, Tree<string> &parentTree)   {
 		Tree<string> end(top.literal);
 		usedTrees.push(end);
 	} else {
-	/*	throw string("Failure: Expected the End of File keyword, I did.
-		 			This is why you fail. \n");*/
-		throw string("Error in code");
+		string error = "Failure at character " +allTokens.top().literal+", row " + to_string(allTokens.top().row) + ", column "+ to_string(allTokens.top().column) + ". Expected another function, or the End of File keyword, I did. This is why you fail. \n";
+		throw string(error);
 	}
 
 	while (usedTrees.size() > 0) {
@@ -185,7 +174,9 @@ Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenif
 						Tree<string> statementConverter(stateHolder.literal);
 						//allTokens.pop();
 						statements(allTokens, statementConverter);
-						usedTrees.push(statementConverter) ;
+						if (statementConverter.numberOfChildren() > 0) {
+							usedTrees.push(statementConverter) ;
+						}
 					}
 				}else if (allTokens.top().type == FUNCTIONTOKEN[outerLoop][innerLoop]){
 					//check to see how this works
@@ -222,7 +213,8 @@ Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenif
 		/*throw string("Failure at character %s, row %d, column %d.
 							This is why you fail",
 							top.literal, top.row, top.column);*/
-		throw string("Error in code");
+		string error = "Failure at character " +allTokens.top().literal+", row " + to_string(allTokens.top().row) + ", column "+ to_string(allTokens.top().column) + ". Matches a function, it does not. This is why you fail. \n";
+		throw string(error);
 
 	}
 /*
@@ -249,11 +241,7 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 				//funcTree.AddChild(tempTree);
 				cout << "STATEMENT : ADDING STATEMENT " << endl;
 				if (STATEMENTOKEN[outerLoop][innerLoop] == TokenType::STATEMENT){
-					while (allTokens.size() != 0 && allTokens.top().type == TokenType::STATEMENT){
-						//funcTree.AddChild(Tree<string>(allTokens.top()));
-						//
-						//TODO Here is where we have to add the placeholder statement call
-						//
+					/*while (allTokens.size() != 0 && allTokens.top().type == TokenType::STATEMENT){
 						Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0};
 
 						Tree<string> statementConverter(stateHolder.literal);
@@ -261,17 +249,40 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 						statements(allTokens, statementConverter);
 						usedTrees.push(statementConverter) ;
 
-						//usedTokens.push(allTokens.top());
-					//	Token temp = allTokens.top();
-						//Tree<string> temp2(temp);
-			//			usedTrees.push(temp2) ;
-						//allTokens.pop();
 						if (allTokens.top().type == TokenType::OPERATOR_COMMA){
 							usedTokens.push(allTokens.top());
 							allTokens.pop();
 						}
+					} */
+					//continue;
+					if (outerLoop == 0) {
+						while (allTokens.size() != 0 && allTokens.top().type != TokenType::KEYWORD_YOU_MUST) {
+							Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0};
+
+							Tree<string> statementConverter(stateHolder.literal);
+							//allTokens.pop();
+							statements(allTokens, statementConverter);
+							if (statementConverter.numberOfChildren() > 0) {
+								usedTrees.push(statementConverter) ;
+							}
+							if (allTokens.top().type == TokenType::SEPARATOR_SEMICOLON){
+								usedTokens.push(allTokens.top());
+								allTokens.pop();
+							}
+						}
+						Tree<string> you_must_token(allTokens.top().literal);
+						usedTrees.push(you_must_token);
+						usedTokens.push(allTokens.top());
+						allTokens.pop();
+						return;
+					} else {
+						Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0};
+
+						Tree<string> statementConverter(stateHolder.literal);
+						//allTokens.pop();
+						statements(allTokens, statementConverter);
+						usedTrees.push(statementConverter) ;
 					}
-					continue;
 				}
 
 		//Add correction to see if it fails.
@@ -293,7 +304,10 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 				Tree<string> exprB(exprTokB.literal);
 				expressionBinary(allTokens,exprB);
 				cout << "STATEMENT : expression Binary made " << endl;
-				usedTrees.push(exprB) ;
+				if (exprB.numberOfChildren() > 0) {
+					usedTrees.push(exprB) ;
+				}
+
 			}
 			else if (allTokens.size() != 0 && allTokens.top().type == STATEMENTOKEN[outerLoop][innerLoop]){
 				//check to see how this works
@@ -337,7 +351,8 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 
 
 	}
-	throw string("Error in code");
+	string error = "Failure at character " +allTokens.top().literal+", row " + to_string(allTokens.top().row) + ", column "+ to_string(allTokens.top().column) + ". Matches a statement, it does not. This is why you fail \n";
+	throw string(error);
 }
 /*
 ExpB -> OPERATOR_PLUS . ExpNB |
@@ -434,26 +449,21 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 					Token paramTok = {TokenType::PARAMS,"PARAMS",0,0};
 					Tree<string> paramTree(paramTok.literal);
 					expressionNonBinary(allTokens,paramTree);
-					//allTokens.pop();
                     cout << "out of ExpNB in PARAMS" << endl;
-                    cout << "out of params" << allTokens.top().literal << endl;
-					usedTrees.push(paramTree);
+				//	usedTrees.push(paramTree);
+					cout << "top token, row, column = " << "'" << allTokens.top().literal << "'" << ", " << allTokens.top().row << ", " << allTokens.top().column << endl;
 					while (allTokens.top().type != TokenType::SEPARATOR_RIGHT_PAREN) {
 						Token top = allTokens.top();
 						if (top.type == TokenType::OPERATOR_COMMA) {
 							usedTokens.push(top);
 							allTokens.pop();
-							Token paramTok = {TokenType::PARAMS,0,0};
-							Tree<string> paramTreeMore(paramTok.literal);
-							expressionNonBinary(allTokens,paramTreeMore);
-							usedTrees.push(paramTreeMore);
+							expressionNonBinary(allTokens,paramTree);
 						} else {
-						/*	throw string ("Failure at character %d, row %d, column %d.
-							Expected a comma or right parenthesis, did I. This is why you fail",
-							top.value, top.row, top.column);*/
-							throw string("Error in code");
+							string error = "Failure at character " +top.literal+", row " + to_string(top.row) + ", column "+ to_string(top.column) + ". Expected a comma or right parenthesis, I did. This is why you fail \n";
+							throw string(error);
 						}
 					}
+					usedTrees.push(paramTree);
 					cout << "Got past params right" << endl;
 					Token top = allTokens.top();
 					usedTokens.push(top);
@@ -479,22 +489,6 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 					return;
 
 				}
-			}else if (EXPNBTOKEN[outerLoop][innerLoop] == TokenType::IDENTIFIER_VARIABLE && allTokens.top().type == TokenType::IDENTIFIER_VARIABLE) {
-				cout << "Found it was an identifer" << endl;
-				while (allTokens.size() != 0 && allTokens.top().type == TokenType::IDENTIFIER_VARIABLE){
-					cout << "Found it was an identifer isndie" << endl;
-					//funcTree.AddChild(Tree<string>(allTokens.top()));
-					usedTokens.push(allTokens.top());
-					Token temp = allTokens.top();
-					Tree<string> temp2(temp.literal);
-					usedTrees.push(temp2) ;
-					allTokens.pop();
-					if (allTokens.top().type == TokenType::OPERATOR_COMMA){
-						usedTokens.push(allTokens.top());
-						allTokens.pop();
-					}
-				}
-				continue;
 			} else {
 				Token top = allTokens.top();
 				if (top.type == EXPNBTOKEN[outerLoop][innerLoop]) {
@@ -511,10 +505,8 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){
 					}
 				} else {
 					if (outerLoop == EXPNBTOKEN.size()-1) {
-						/*throw string ("Failure at character %s, row %d, column %d.
-						Matches a non-binary expression, it does not. This is why you fail",
-						top.value, top.row, top.column);*/
-						throw string("Error in code");
+						string error = "Failure at character " +top.literal+", row " + to_string(top.row) + ", column "+ to_string(top.column) +". Matches a non-binary expression, it does not. This is why you fail \n";
+						throw string (error);
 					} else {
 						while (usedTrees.size() > 0) {
 							usedTrees.pop();
