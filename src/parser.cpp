@@ -103,7 +103,15 @@ lib -> KEYWORD_PRETEXT . Function* . KEYWORD_EOF
 void lib(stack<Token> &allTokens, Tree<string> &parentTree)   {
 
 	queue<Tree<string> > usedTrees;
+	if (allTokens.top().type != TokenType::KEYWORD_PRETEXT){
+        string error = "Expected the Pretext Keyword, I did. This is why you fail \n";
+    	throw string(error);
+    }
 	Token top = allTokens.top();
+	Tree<string> libTree(top.literal);
+	parentTree.addChild(libTree);
+	allTokens.pop();
+	top = allTokens.top();
 	cout << "got into the lib" << endl;
 	while (allTokens.size() > 0 && allTokens.top().type != TokenType::KEYWORD_THE_END ) {
 		Token FuncTok = {TokenType::FUNCTIONS,"FUNCTION",0,0};
