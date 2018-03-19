@@ -35,14 +35,15 @@ void printPrettyTestTokenStream() {
         //     outputFile << s.top() << std::endl;
         //     s.pop();
         // }
-        
+
         Tree<string> printTree("LIB");
         //s.pop();
         Parser p;
-        std::cout << "About to go itno tree " << std::endl;
         p.lib(s, printTree);
         printTree.printToFile("output.txt");
+        cout << "Tree successfully generated, check output.txt to see it" << endl;
     } catch(const string& s) {
+        cout << "Compilation error, check output.txt for more information" << endl;
         std::ofstream outputFile("output.txt", std::ofstream::binary);
         outputFile << s << std::endl;
     }
