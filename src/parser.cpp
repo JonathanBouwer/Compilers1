@@ -84,6 +84,10 @@ public:
 											  {TokenType::OPERATOR_OR, TokenType::EXPRESSIONNB},
 											  {TokenType::OPERATOR_AND, TokenType::EXPRESSIONNB},
 											  {TokenType::OPERATOR_IS, TokenType::EXPRESSIONNB},
+											  {TokenType::OPERATOR_GT, TokenType::EXPRESSIONNB},
+											  {TokenType::OPERATOR_GTE, TokenType::EXPRESSIONNB},
+											  {TokenType::OPERATOR_LT, TokenType::EXPRESSIONNB},
+											  {TokenType::OPERATOR_LTE, TokenType::EXPRESSIONNB},
 											  {TokenType::EMPTY}};
 	const vector<vector<TokenType> > EXPNBTOKEN = { {TokenType::IDENTIFIER_VARIABLE, TokenType::EXPRESSIONB},
 											   {TokenType::LITERAL_INTEGER, TokenType::EXPRESSIONB},
@@ -255,14 +259,17 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 						}
 					} */
 					//continue;
+
+
 					if (outerLoop == 0) {
 						while (allTokens.size() != 0 && allTokens.top().type != TokenType::KEYWORD_YOU_MUST) {
 							Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0};
-
+							cout << "STATEMENT : Into you must statement" << endl;
 							Tree<string> statementConverter(stateHolder.literal);
 							//allTokens.pop();
 							statements(allTokens, statementConverter);
 							if (statementConverter.numberOfChildren() > 0) {
+								cout << "STATEMENT : It has children" << endl;
 								usedTrees.push(statementConverter) ;
 							}
 							if (allTokens.top().type == TokenType::SEPARATOR_SEMICOLON){
@@ -274,7 +281,7 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 						usedTrees.push(you_must_token);
 						usedTokens.push(allTokens.top());
 						allTokens.pop();
-						return;
+						break;
 					} else {
 						Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0};
 
@@ -284,6 +291,13 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 						usedTrees.push(statementConverter) ;
 					}
 				}
+				// if (outerLoop == 0){
+				// 	while (allTokens.size() != 0 && allTokens.top().type != TokenType::KEYWORD_YOU_MUST) {
+				// 	}
+				// }else{
+
+				// }
+
 
 		//Add correction to see if it fails.
 			}else if (allTokens.size() != 0 && STATEMENTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONNB){
