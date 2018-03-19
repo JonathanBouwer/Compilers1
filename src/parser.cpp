@@ -82,66 +82,66 @@ void lib(stack<Token> &allTokens, Tree<string> &parentTree)   {
 /*
 Functions -> Keyword_Force . Identifier_Function . Seperator_Left_Paren . Idenifier_Variable* . Seperator_Right_Paren . Keyword_Then . Statement . Keyword_You_must
 */
-	void functions(stack<Token> &allTokens, Tree<string> &parentTree){
-		Token top;
-		for (int outerLoop = 0; outerLoop < FUNCTIONTOKEN.size(); outerLoop++){
-			queue<Tree<string> > usedTrees ;
-			stack<Token> usedTokens;
-			bool allPassed = true;
-			for (int innerLoop = 0 ; innerLoop < FUNCTIONTOKEN[outerLoop].size(); innerLoop++){
-				if (FUNCTIONTOKEN[outerLoop][innerLoop] == TokenType::IDENTIFIER_VARIABLE){
-					while (allTokens.size() != 0 && allTokens.top().type == TokenType::IDENTIFIER_VARIABLE){
-						usedTokens.push(allTokens.top());
-						Token temp = allTokens.top();
-						Tree<string> temp2(temp.literal);
-						usedTrees.push(temp2) ;
-						allTokens.pop();
-						if (allTokens.top().type == TokenType::OPERATOR_COMMA){
-							usedTokens.push(allTokens.top());
-							allTokens.pop();
-						}
-					}
-					continue;
-				}else if (allTokens.size() != 0 && FUNCTIONTOKEN[outerLoop][innerLoop] == TokenType::STATEMENT){
-					while ((allTokens.top().type != TokenType::KEYWORD_YOU_MUST) || (allTokens.top().type != TokenType::KEYWORD_FORCE)){
-						Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0};
-						if (allTokens.top().type == TokenType::KEYWORD_YOU_MUST){
-							break;
-						}
-						Tree<string> statementConverter(stateHolder.literal);
-						statements(allTokens, statementConverter);
-						if (statementConverter.numberOfChildren() > 0) {
-							usedTrees.push(statementConverter) ;
-						}
-					}
-				}else if (allTokens.top().type == FUNCTIONTOKEN[outerLoop][innerLoop]){
-					Token temp = allTokens.top();
+void functions(stack<Token> &allTokens, Tree<string> &parentTree){
+	Token top; // top used to hold the top token of the stack 
+	for (int outerLoop = 0; outerLoop < FUNCTIONTOKEN.size(); outerLoop++){// loops over the outer part of the FUNCTIONTOKEN vector
+		queue<Tree<string> > usedTrees ; // holds trees which have been created, if the language passes the trees will be popped into the parent tree
+		stack<Token> usedTokens; // holds used tokens, if the language fails it must be added back to the allTokens stack
+		bool allPassed = true;// used to see if tokens follow correct order of langauge
+		for (int innerLoop = 0 ; innerLoop < FUNCTIONTOKEN[outerLoop].size(); innerLoop++){
+			if (FUNCTIONTOKEN[outerLoop][innerLoop] == TokenType::IDENTIFIER_VARIABLE){ 
+				while (allTokens.size() != 0 && allTokens.top().type == TokenType::IDENTIFIER_VARIABLE){ // Since many identifier variables can come after eachother, it will go until there is one left (0..*)
+					usedTokens.push(allTokens.top()); // adds token to used tokens
+					Token temp = allTokens.top(); // creates token to add to new tree
 					Tree<string> temp2(temp.literal);
-					usedTrees.push(temp2) ;
-					usedTokens.push(temp);
-					allTokens.pop();
-				}else{
-					allPassed = false;
-					break;
+					usedTrees.push(temp2) ; // adds newly made tree to used trees
+					allTokens.pop(); 
+					if (allTokens.top().type == TokenType::OPERATOR_COMMA){ // if there is a comma there must be another identifier so pop off the comma
+						usedTokens.push(allTokens.top());
+						allTokens.pop();
+					}// comma is not added to the tree
 				}
-			}
-			if (allPassed){
-				while (usedTrees.size() >0){
-					parentTree.addChild(usedTrees.front());
-					usedTrees.pop();
+				continue; // Dont do anything else in this innerloop, go to innerloop +1
+			}else if (allTokens.size() != 0 && FUNCTIONTOKEN[outerLoop][innerLoop] == TokenType::STATEMENT){
+				while ((allTokens.top().type != TokenType::KEYWORD_YOU_MUST) || (allTokens.top().type != TokenType::KEYWORD_FORCE)){ // statements can be after statements inside a functions, unless the word youmust of force is found it is another statement
+					Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0}; // create a statement placeholder token
+					if (allTokens.top().type == TokenType::KEYWORD_YOU_MUST){ // you must will end the while loop
+						break;
+					}
+					Tree<string> statementConverter(stateHolder.literal); // create the statement tree for the next set of tokens
+					statements(allTokens, statementConverter);
+					if (statementConverter.numberOfChildren() > 0) { // statement tree could be empty, if so dont add it to the tree
+						usedTrees.push(statementConverter) ;
+					}
 				}
-				return;
+			}else if (allTokens.top().type == FUNCTIONTOKEN[outerLoop][innerLoop]){ // normal token match, adding it to the used tree and used tokens
+				Token temp = allTokens.top();
+				Tree<string> temp2(temp.literal);
+				usedTrees.push(temp2) ;
+				usedTokens.push(temp);
+				allTokens.pop();
 			}else{
-				while (usedTokens.size() != 0) {
-					allTokens.push(usedTokens.top());
-					usedTokens.pop();
-				}
+				allPassed = false; // no match found, break from inner loop
+				break;
 			}
 		}
-		string error = "Failure at character " +allTokens.top().literal+", row " + to_string(allTokens.top().row) + ", column "+ to_string(allTokens.top().column) + ". Matches a function, it does not. This is why you fail. \n";
-		throw string(error);
+		if (allPassed){ // everything was correct then add to the parent tree and return (ends the function)
+			while (usedTrees.size() >0){
+				parentTree.addChild(usedTrees.front());
+				usedTrees.pop();
+			}
+			return;
+		}else{ // if not add all the tokens back onto the allTokens stack
+			while (usedTokens.size() != 0) {
+				allTokens.push(usedTokens.top());
+				usedTokens.pop();
+			}
+		}
+	}// If it gets out of outerloop, if has checked all the tokens agaisnt the the function part of the language and therefore it must not match something at the top value of the allTokens stack
+	string error = "Failure at character " +allTokens.top().literal+", row " + to_string(allTokens.top().row) + ", column "+ to_string(allTokens.top().column) + ". Matches a function, it does not. This is why you fail. \n";
+	throw string(error);
 
-	}
+}
 /*
 Statements->Keyword_Then . Statement* . Keyword_You_Must |
 			Keyword_If . Seperator_Left_Paren . ExpressionNonBinary . ExpressionBinary . Seperator_Right_Paren . Statement |
@@ -158,26 +158,26 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 		bool allPassed = true;
 		for (int innerLoop = 0 ; innerLoop < STATEMENTOKEN[outerLoop].size(); innerLoop++){
 			if (allTokens.size() != 0 && STATEMENTOKEN[outerLoop][innerLoop] == TokenType::STATEMENT){
-				if (STATEMENTOKEN[outerLoop][innerLoop] == TokenType::STATEMENT){
-					if (outerLoop == 0) {
-						while (allTokens.size() != 0 && allTokens.top().type != TokenType::KEYWORD_YOU_MUST) {
-							Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0};
+				if (STATEMENTOKEN[outerLoop][innerLoop] == TokenType::STATEMENT){// a statment can have a statement as its child
+					if (outerLoop == 0) { // if the outerloop is 0 the statement follows the format "then, statement*, youmust" which will only stop adding statements once the keyword you must is found
+						while (allTokens.size() != 0 && allTokens.top().type != TokenType::KEYWORD_YOU_MUST) { // once keyword youmust is found the while loop ends
+							Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0}; // placeholder statement token
 							Tree<string> statementConverter(stateHolder.literal);
-							statements(allTokens, statementConverter);
-							if (statementConverter.numberOfChildren() > 0) {
+							statements(allTokens, statementConverter); // call statements again 
+							if (statementConverter.numberOfChildren() > 0) { // if no statement was added dont add to the parent tree
 								usedTrees.push(statementConverter) ;
 							}
-							if (allTokens.top().type == TokenType::SEPARATOR_SEMICOLON){
+							if (allTokens.top().type == TokenType::SEPARATOR_SEMICOLON){ // if it is a semi colon in the statement then is must be added to the used tokens
 								usedTokens.push(allTokens.top());
 								allTokens.pop();
 							}
 						}
-						Tree<string> you_must_token(allTokens.top().literal);
+						Tree<string> you_must_token(allTokens.top().literal); // you must must always follow so it can be added the the tree
 						usedTrees.push(you_must_token);
 						usedTokens.push(allTokens.top());
 						allTokens.pop();
-						break;
-					} else {
+						break; // end this inner loop to eventually add to parent tree
+					} else {// otherwise  it follows another format of statement and this can be added as a child
 						Token stateHolder = {TokenType::STATEMENT, "STATEMENT" , 0,0};
 
 						Tree<string> statementConverter(stateHolder.literal);
@@ -185,41 +185,39 @@ void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 						usedTrees.push(statementConverter) ;
 					}
 				}
-			} else if (allTokens.size() != 0 && STATEMENTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONNB){
+			} else if (allTokens.size() != 0 && STATEMENTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONNB){ // a statement can have expression non binary in it
 				Token exprTokNB = {TokenType::EXPRESSIONNB, "EXPRESSIONNB", 0,0};
 				Tree<string> exprNB(exprTokNB.literal);
 				expressionNonBinary(allTokens, exprNB);
 				usedTrees.push(exprNB) ;
-			} else if (allTokens.size() != 0 && STATEMENTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONB) {
+			} else if (allTokens.size() != 0 && STATEMENTOKEN[outerLoop][innerLoop] == TokenType::EXPRESSIONB) {// a statemnet can have a expression binary in it
 				Token exprTokB = {TokenType::EXPRESSIONB, "EXPRESSIONB",0,0};
 				Tree<string> exprB(exprTokB.literal);
 				expressionBinary(allTokens,exprB);
-				if (exprB.numberOfChildren() > 0) {
+				if (exprB.numberOfChildren() > 0) { // this can be empty, if so dont add to the tree
 					usedTrees.push(exprB) ;
 				}
 
 			}
-			else if (allTokens.size() != 0 && allTokens.top().type == STATEMENTOKEN[outerLoop][innerLoop]){
+			else if (allTokens.size() != 0 && allTokens.top().type == STATEMENTOKEN[outerLoop][innerLoop]){ // General matching statement of tokens
 				Token temp = allTokens.top();
 				usedTokens.push(temp);
 				Tree<string> temp2(temp.literal);
 				usedTrees.push(temp2) ;
 				allTokens.pop();
 			}else{
-				allPassed = false;
+				allPassed = false; // didnt match any tokens
 				break;
 			}
-			if (allTokens.size()  ==0){
-				allTokens.pop();
-			}
+			
 		}
-		if (allPassed){
+		if (allPassed){ // if everything passes then add to the parent tree
 			while (usedTrees.size() >0){
 				parentTree.addChild(usedTrees.front());
 				usedTrees.pop();
 			}
-			return;
-		}else{
+			return; // return to end function
+		}else{// otherwise backtrack and add everything back to all tokens
 			while (usedTokens.size() != 0) {
 				allTokens.push(usedTokens.top());
 				usedTokens.pop();
