@@ -30,7 +30,7 @@ void printPrettyTestTree() {
 void printPrettyTestTokenStream() {
     std::ofstream outputFile("output.txt", std::ofstream::binary | std::ofstream::app);
     try {
-        auto s = tokenizeFile("sample/tesProg.ys");
+        auto s = tokenizeFile("sample/FizzBuzz.ys");
         // while (!s.empty()) {
         //     outputFile << s.top() << std::endl;
         //     s.pop();
@@ -38,8 +38,8 @@ void printPrettyTestTokenStream() {
 
         Tree<string> printTree("LIB");
         //s.pop();
-        Parser p;
-        p.lib(s, printTree);
+        
+        lib(s, printTree);
         printTree.printToFile("output.txt");
         cout << "Tree successfully generated, check output.txt to see it" << endl;
     } catch(const string& s) {
