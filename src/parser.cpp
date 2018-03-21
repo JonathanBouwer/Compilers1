@@ -31,7 +31,7 @@ const vector<vector<TokenType> > EXPB_TOKEN = {{OPERATOR_PLUS, EXPRESSIONNB},
 										     {OPERATOR_GTE, EXPRESSIONNB},
 										     {OPERATOR_LT, EXPRESSIONNB},
 										     {OPERATOR_LTE, EXPRESSIONNB},
-											 {OPERATOR_NEQ, EXPRESSIONB},
+											 {OPERATOR_NEQ, EXPRESSIONNB},
 										     {EMPTY}};
 const vector<vector<TokenType> > EXPNB_TOKEN = { {IDENTIFIER_VARIABLE, EXPRESSIONB},
 										      {LITERAL_INTEGER, EXPRESSIONB},
@@ -52,6 +52,7 @@ ExpB -> OPERATOR_PLUS . ExpNB |
 		OPERATOR_OR . ExpNB |
 		OPERATOR_AND . ExpNB |
 		OPERATOR_IS . ExpNB |
+		OPERATOR_NEQ . ExpNB |
 		e
 */
 void expressionBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //logic for generation of an expressionBinary non-terminal
