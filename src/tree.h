@@ -18,34 +18,33 @@ const std::string botPrefix = "    ";
 template <typename T>
 class Tree {
     private:
-        std::vector<Tree<T>*> children;
-        Tree<T>* parent;
+        std::vector<Tree<T>> children;
         T value;
     public:
-        Tree() {}
-        
-        Tree(T val) : value(val), parent(NULL) {}
-        
-        Tree(const Tree& other) : value(other.value), 
+        Tree():value("") {}
+
+        Tree(T val) : value(val) {}
+
+        Tree(const Tree& other) : value(other.value),
                                   children(other.children) {}
-        
-        Tree(Tree&& other) : value(std::move(other.value)), 
+
+        Tree(Tree&& other) : value(std::move(other.value)),
                              children(std::move(other.children)) {}
-        
+
         Tree& operator=(const Tree& other) {
             value = other.value;
             children = other.children;
         }
-        
+
         Tree& operator=(Tree&& other) {
             value = std::move(other.value);
             children = std::move(other.children);
         }
-        
+
         ~Tree() {}
-        
-        void addChild(Tree& child) {
-            children.push_back(&child);
+
+        void addChild(const Tree& child) {
+            children.push_back(child);
         }
         
         void printToFile(const std::string& filename) {
@@ -54,6 +53,10 @@ class Tree {
             outputFile.close();
         }
         
+        int numberOfChildren(){
+            return children.size();
+        }
+
         friend std::ostream& operator<<(std::ostream& out, const Tree<T>& tree) {
             out << prettyPrint(tree);
             return out;
@@ -66,13 +69,13 @@ class Tree {
             output << initialPrefix << tree.value  << "\n";
             if (tree.children.size() == 0) return output.str();
             
-            int lastChildIndex = tree.children.size() - 1;            
+            int lastChildIndex = tree.children.size() - 1;
             for (int i = 0; i < lastChildIndex; i++) {
-                Tree<T> *child = tree.children[i];
-                output << prettyPrint(*child, prefix + topInitPrefix, prefix + topPrefix);
+                Tree<T> child = tree.children[i];
+                output << prettyPrint(child, prefix + topInitPrefix, prefix + topPrefix);
             }
-            Tree<T> *lastChild = tree.children[lastChildIndex];
-            output << prettyPrint(*lastChild, prefix + botInitPrefix, prefix + botPrefix);
+            Tree<T> lastChild = tree.children[lastChildIndex];
+            output << prettyPrint(lastChild, prefix + botInitPrefix, prefix + botPrefix);
             return output.str();
         }
 };

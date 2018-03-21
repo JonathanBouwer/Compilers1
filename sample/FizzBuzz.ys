@@ -19,7 +19,7 @@ force order_66() then
         let str be execute order_FizzBuzz(i);
         execute order_PrintLine(input);
         let i be i + 1;
-    you_must while(i < = 100)
+    you_must while(i <= 100)
 you_must
 
 the_end

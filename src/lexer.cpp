@@ -17,9 +17,22 @@ using namespace std;
 string readFile(const string& fileName) {
     stringstream ss;
     ifstream input(fileName);
+    if(!input.is_open()) {
+        throw string("File not found: ") + fileName;
+    }    
     ss << input.rdbuf();
     input.close();
     return ss.str();
+}
+
+/*
+** Wrapper method to throw unidentified token exception
+*/
+void unidentifiedToken(const string& input, int row, int column) {
+    stringstream ss;
+    ss << "Lexing Error: Unidentified token at " << row << ":" << column+1;
+    ss << " - \"" << string(input, column) << "\"\n";
+    throw ss.str();
 }
 
 /*
@@ -42,15 +55,12 @@ int nextTokenLength(const string& input, int column, int row) {
                 break;
             }
         }
-    }        
+    }
     --tokenLength;
-       
-    // If no token is found throw an error 
+
+    // If no token is found throw an error
     if (tokenLength == 0) {
-        stringstream ss;
-        ss << "Lexing Error: Unidentified token at " << row << ":" << column+1;
-        ss << " - \"" << string(input, column) << "\"\n";
-        throw ss.str();
+        unidentifiedToken(input, row, column);
     }
     return tokenLength;
 }
@@ -71,6 +81,16 @@ int findNextMatchingChar(const string& input, int column, char c, int row) {
 }
 
 /*
+** Simple method to ensure next character matches a given character and is not
+** out of bounds. Throws an error if these conditions are not met
+*/
+void nextCharMatches(const string& input, int column, char c, int row) {
+    if (input.length() <= column + 1 || input[column + 1] != c) {
+        unidentifiedToken(input, row, column);
+    }
+}
+
+/*
 ** Method to take an input string and convert it into a stream of tokens.
 ** If an error occurs during lexing then a string is thrown.
 */
@@ -85,7 +105,7 @@ stack<Token> tokenize(const string& input) {
         // Loop through current line
         while (column < currentLine.length()) {
             int tokenLength = nextTokenLength(currentLine, column, row);
-            
+
             // Parse token and add it to the tree
             auto tokenStart = currentLine.begin() + column;
             auto tokenEnd = tokenStart + tokenLength;
@@ -95,14 +115,28 @@ stack<Token> tokenize(const string& input) {
                     if (matcher.type == WHITESPACE) {
                         break;
                     }
-                    
+
                     // Literal Strings and Chars require end quotes
                     if (matcher.type == LITERAL_STRING) {
                         tokenLength += findNextMatchingChar(currentLine, column, '"', row);
                     } else if (matcher.type == LITERAL_CHAR) {
                         tokenLength += findNextMatchingChar(currentLine, column, '\'', row);
+                    } 
+                    /* The following 3 operators are 2 characters long and do not match
+                    ** the identifier regex during longest match so they instead match
+                    ** a single char and then checking that the next char matches.
+                    */
+                    else if (matcher.type == OPERATOR_AND) {
+                        nextCharMatches(currentLine, column, '&', row);
+                        tokenLength += 1;
+                    } else if (matcher.type == OPERATOR_OR) {
+                        nextCharMatches(currentLine, column, '|', row);
+                        tokenLength += 1;
+                    } else if (matcher.type == OPERATOR_NEQ) {
+                        nextCharMatches(currentLine, column, '=', row);
+                        tokenLength += 1;
                     }
-                    
+
                     // Add Token to stream
                     Token token;
                     token.type = matcher.type;
@@ -116,7 +150,7 @@ stack<Token> tokenize(const string& input) {
             column += tokenLength;
         }
     }
-    
+
     return stack<Token>(deque<Token>(tokenStream.rbegin(), tokenStream.rend()));
 }
 

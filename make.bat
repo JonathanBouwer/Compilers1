@@ -8,7 +8,7 @@ cl src\main.cpp %FLAGS% %LIBS%
 goto :EOF
 
 :run
-bin\main
+bin\main %2 %3
 goto :EOF
 
 :debug

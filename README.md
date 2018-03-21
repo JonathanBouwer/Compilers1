@@ -1,4 +1,13 @@
 # Compilers Assignment
+
+## YodaScript
+
+YodaScript is a Star Wars based programming language with many keywords and statements based on the famous character Yoda, often using English phrases in a grammatically incorrect fashion. This language supports functions, conditional expressions, looping constructs, and more; with the entire program text lying between the keywords a_long_time_ago_in_a_galaxy_far_far_away and the_end. 
+
+Sample code can be found in the ```sample``` folder.
+
+## Building the Compiler
+
 ### Compilation Windows
 This requires Microsoft Visual C++ is installed, this can be chosen during a Visual Studio Installation.
 
@@ -14,3 +23,9 @@ This requires `g++` and `make` are installed
   - Running `make` will run the application
   - Running `make clean` will cleanup build artifacts
   - Running `src/main` will run the application passing all command line arguments (Make doesn't support passing command line arguments)
+  
+## Testing
+
+Testing is done though ```TestSuite.py```, a python script which will attempt to compile all scripts ion the ```sample/TestSuite``` folder. To run the tests simply run ```python src/TestSuite.py``` on the terminal (Python 3 required).
+
+To write your own test is simple! Create a file in the TestSuite directory with the final character before the file extension (i.e. the first ```.``` in the file name) being either ```F``` or ```S``` for Should Fail or Should Succeed respectively. Use the already written tests as a reference.
