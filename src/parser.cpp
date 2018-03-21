@@ -31,6 +31,7 @@ const vector<vector<TokenType> > EXPB_TOKEN = {{OPERATOR_PLUS, EXPRESSIONNB},
 										     {OPERATOR_GTE, EXPRESSIONNB},
 										     {OPERATOR_LT, EXPRESSIONNB},
 										     {OPERATOR_LTE, EXPRESSIONNB},
+										     {OPERATOR_NEQ, EXPRESSIONB},
 										     {EMPTY}};
 const vector<vector<TokenType> > EXPNB_TOKEN = { {IDENTIFIER_VARIABLE, EXPRESSIONB},
 										      {LITERAL_INTEGER, EXPRESSIONB},
@@ -402,7 +403,7 @@ void lib(stack<Token> &allTokens, Tree<string> &parentTree)   { //checks for ini
 
 	queue<Tree<string> > usedTrees;
 
-	if (allTokens.top().type != KEYWORD_PRETEXT){
+	if ( allTokens.size() < 0 || allTokens.top().type != KEYWORD_PRETEXT){
         string error = "Expected the Pretext Keyword, I did. This is why you fail \n";
     	throw string(error);
     }
@@ -411,8 +412,7 @@ void lib(stack<Token> &allTokens, Tree<string> &parentTree)   { //checks for ini
 	Tree<string> libTree(top.literal);
 	parentTree.addChild(libTree);
 	allTokens.pop();
-	top = allTokens.top();
-
+	
 	while (allTokens.size() > 0 && allTokens.top().type != KEYWORD_THE_END ) {
 		Token FuncTok = {FUNCTIONS,"FUNCTION",0,0};
 		Tree<string> functionTree(FuncTok.literal);
