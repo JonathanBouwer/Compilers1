@@ -168,15 +168,8 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //l
 
 					usedTrees.push(paramTree);
 
-				}  else {
-
-					Token top = allTokens.top();
-					usedTokens.push(top);
-                    Tree<string> rightParenTree(top.literal);
-                    usedTrees.push(rightParenTree);
-					allTokens.pop();
-
 				}
+
 			} else {
 				Token top = allTokens.top();
 
