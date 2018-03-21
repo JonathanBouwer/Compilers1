@@ -31,14 +31,14 @@ const vector<vector<TokenType> > EXPB_TOKEN = {{OPERATOR_PLUS, EXPRESSIONNB},
 										     {OPERATOR_GTE, EXPRESSIONNB},
 										     {OPERATOR_LT, EXPRESSIONNB},
 										     {OPERATOR_LTE, EXPRESSIONNB},
-										     {OPERATOR_NEQ, EXPRESSIONB},
+											 {OPERATOR_NEQ, EXPRESSIONB},
 										     {EMPTY}};
 const vector<vector<TokenType> > EXPNB_TOKEN = { {IDENTIFIER_VARIABLE, EXPRESSIONB},
 										      {LITERAL_INTEGER, EXPRESSIONB},
 										      {LITERAL_STRING, EXPRESSIONB},
 										      {LITERAL_CHAR, EXPRESSIONB},
 										      {SEPARATOR_LEFT_PAREN, EXPRESSIONNB, SEPARATOR_RIGHT_PAREN, EXPRESSIONB},
-										      {KEYWORD_EXECUTE, IDENTIFIER_FUNCTION,SEPARATOR_LEFT_PAREN, PARAMS, SEPARATOR_RIGHT_PAREN}};
+										      {KEYWORD_EXECUTE, IDENTIFIER_FUNCTION,SEPARATOR_LEFT_PAREN, PARAMS, SEPARATOR_RIGHT_PAREN , EXPRESSIONB}};
 
 void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree);
 
@@ -102,6 +102,15 @@ void expressionBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //logi
 	return;
 }
 
+/*
+ExpNB -> IDENTIFIER_VARIABLE . ExpB |
+		 LITERAL_INTEGER . ExpB |
+		 LITERAL_STRING . ExpB |
+		 LITERAL_CHAR . ExpB |
+		 SEPARATOR_LEFT_PAREN . ExpNB . SEPARATOR_RIGHT_PAREN . ExpB |
+		 KEYWORD_EXECUTE . IDENTIFIER_FUNCTION . SEPARATOR_LEFT_PAREN . Params . SEPARATOR_RIGHT_PAREN . ExpB |
+*/
+
 void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //logic for generation of an expressionNonBinary non-terminal
 
 	stack<Token> usedTokens;
@@ -112,7 +121,6 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //l
 		for (int innerLoop = 0; innerLoop < EXPNB_TOKEN[outerLoop].size();innerLoop++) {
 
 			if (allTokens.size() > 0 && EXPNB_TOKEN[outerLoop][innerLoop] == EXPRESSIONB) {
-
 				Token exprTokBi = {EXPRESSIONB, "EXPRESSIONB", 0,0};
 				Tree<string> expressionBTree(exprTokBi.literal);
 				expressionBinary(allTokens,expressionBTree);
@@ -121,18 +129,11 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //l
 					usedTrees.push(expressionBTree);
 				}
 
-                Token next = allTokens.top();
-
-                if (innerLoop == EXPNB_TOKEN[outerLoop].size()-1) {
-
 				while (usedTrees.size() > 0) {
 					parentTree.addChild(usedTrees.front());
 					usedTrees.pop();
 				}
-
 				return; //added because whenever an expressionBinary is expected, it's the end of the ExpressionNonBinary grammar
-
-                }
 
 			} else if (allTokens.size() > 0 && EXPNB_TOKEN[outerLoop][innerLoop] == EXPRESSIONNB) {
 
@@ -165,18 +166,6 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //l
 					}
 
 					usedTrees.push(paramTree);
-					Token top = allTokens.top();
-					usedTokens.push(top);
-                    Tree<string> rightParenTree(top.literal);
-                    usedTrees.push(rightParenTree);
-					allTokens.pop();
-
-					while (usedTrees.size() > 0) { //added because right parenthesis is always at end of ExpNB grammar
-						parentTree.addChild(usedTrees.front());
-						usedTrees.pop();
-					}
-
-					return;
 
 				}  else {
 
@@ -185,13 +174,6 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //l
                     Tree<string> rightParenTree(top.literal);
                     usedTrees.push(rightParenTree);
 					allTokens.pop();
-
-					while (usedTrees.size() > 0) {
-						parentTree.addChild(usedTrees.front());
-						usedTrees.pop();
-					}
-
-					return;
 
 				}
 			} else {
@@ -250,11 +232,11 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //l
 
 /*
 Statements->Keyword_Then . Statement* . Keyword_You_Must |
-			Keyword_If . Seperator_Left_Paren . ExpressionNonBinary . ExpressionBinary . Seperator_Right_Paren . Statement |
-			Keyword_Do . Statement . Keyword_While . Seperator_Left_Paren . ExpressionNonBinary. ExpressionBinary . Separtor_Right_Paren |
-			Keyword_Transmit . ExpressionNonBinary . ExpressionBinary . Seperator_Semicolon |
-			Keyword_Let . Identifier_Variable . Operator_Be . ExpressionNonBinary . ExpressionBinary |
-			ExpressionNonBinary . ExpressionBinary . Seperator_Semicolon
+			Keyword_If . Seperator_Left_Paren . ExpressionNonBinary . Seperator_Right_Paren . Statement |
+			Keyword_Do . Statement . Keyword_While . Seperator_Left_Paren . ExpressionNonBinary. Separtor_Right_Paren |
+			Keyword_Transmit . ExpressionNonBinary . Seperator_Semicolon |
+			Keyword_Let . Identifier_Variable . Operator_Be . ExpressionNonBinary  |
+			ExpressionNonBinary . Seperator_Semicolon
 */
 void statements(stack<Token> &allTokens,Tree<string> &parentTree){
 	Token top;
@@ -403,7 +385,7 @@ void lib(stack<Token> &allTokens, Tree<string> &parentTree)   { //checks for ini
 
 	queue<Tree<string> > usedTrees;
 
-	if ( allTokens.size() < 0 || allTokens.top().type != KEYWORD_PRETEXT){
+	if ( allTokens.size() <= 0 || allTokens.top().type != KEYWORD_PRETEXT){
         string error = "Expected the Pretext Keyword, I did. This is why you fail \n";
     	throw string(error);
     }
@@ -412,7 +394,7 @@ void lib(stack<Token> &allTokens, Tree<string> &parentTree)   { //checks for ini
 	Tree<string> libTree(top.literal);
 	parentTree.addChild(libTree);
 	allTokens.pop();
-	
+
 	while (allTokens.size() > 0 && allTokens.top().type != KEYWORD_THE_END ) {
 		Token FuncTok = {FUNCTIONS,"FUNCTION",0,0};
 		Tree<string> functionTree(FuncTok.literal);
@@ -437,16 +419,3 @@ void lib(stack<Token> &allTokens, Tree<string> &parentTree)   { //checks for ini
 	}
 
 }
-
-
-/*
-ExpNB -> IDENTIFIER_VARIABLE . ExpB |
-		 LITERAL_INTEGER . ExpB |
-		 LITERAL_STRING . ExpB |
-		 LITERAL_CHAR . ExpB |
-		 SEPARATOR_LEFT_PAREN . ExpNB . SEPARATOR_RIGHT_PAREN |
-		 KEYWORD_EXECUTE . IDENTIFIER_FUNCTION . SEPARATOR_LEFT_PAREN . Params . SEPARATOR_RIGHT_PAREN |
-*/
-
-
-
