@@ -12,6 +12,7 @@ enum TokenType {
     LITERAL_CHAR,
     LITERAL_INTEGER,
     LITERAL_STRING,
+    KEYWORD_BE,
     KEYWORD_DO,
     KEYWORD_EXECUTE,
     KEYWORD_FORCE,
@@ -23,12 +24,11 @@ enum TokenType {
     KEYWORD_TRANSMIT,
     KEYWORD_WHILE,
     KEYWORD_YOU_MUST,
+    SEPARATOR_COMMA,
     SEPARATOR_LEFT_PAREN,
     SEPARATOR_RIGHT_PAREN,
     SEPARATOR_SEMICOLON,
     OPERATOR_AND,
-    OPERATOR_BE,
-    OPERATOR_COMMA,
     OPERATOR_DIVIDE,
     OPERATOR_GT,
     OPERATOR_GTE,
@@ -82,6 +82,10 @@ struct Token {
                 out << "LITERAL_STRING<" << token.literal << ">";
                 break;
             }
+            case KEYWORD_BE : {
+                out << "KEYWORD_BE";
+                break;
+            }
             case KEYWORD_DO : {
                 out << "KEYWORD_DO";
                 break;
@@ -126,6 +130,10 @@ struct Token {
                 out << "KEYWORD_YOU_MUST";
                 break;
             }
+            case SEPARATOR_COMMA : {
+                out << "SEPARATOR_COMMA";
+                break;
+            }
             case SEPARATOR_LEFT_PAREN : {
                 out << "SEPARATOR_LEFT_PAREN";
                 break;
@@ -140,14 +148,6 @@ struct Token {
             }
             case OPERATOR_AND : {
                 out << "OPERATOR_AND";
-                break;
-            }
-            case OPERATOR_BE : {
-                out << "OPERATOR_BE";
-                break;
-            }
-            case OPERATOR_COMMA : {
-                out << "OPERATOR_COMMA";
                 break;
             }
             case OPERATOR_DIVIDE : {

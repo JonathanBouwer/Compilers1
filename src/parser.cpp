@@ -15,7 +15,7 @@ const vector<vector<TokenType> > STATEMENT_TOKEN = { {KEYWORD_THEN , STATEMENT ,
 											       {KEYWORD_IF , SEPARATOR_LEFT_PAREN , EXPRESSIONNB , SEPARATOR_RIGHT_PAREN , STATEMENT },
 											       {KEYWORD_DO , STATEMENT , KEYWORD_WHILE , SEPARATOR_LEFT_PAREN , EXPRESSIONNB , SEPARATOR_RIGHT_PAREN },
 											       {KEYWORD_TRANSMIT , EXPRESSIONNB , SEPARATOR_SEMICOLON },
-											       {KEYWORD_LET , IDENTIFIER_VARIABLE , OPERATOR_BE , EXPRESSIONNB , SEPARATOR_SEMICOLON },
+											       {KEYWORD_LET , IDENTIFIER_VARIABLE , KEYWORD_BE , EXPRESSIONNB , SEPARATOR_SEMICOLON },
 											       {EXPRESSIONNB , SEPARATOR_SEMICOLON}};
 const vector<vector<TokenType> > LIB_TOKEN = {{KEYWORD_PRETEXT, FUNCTIONS, KEYWORD_THE_END}};
 const vector<vector<TokenType> > EXPB_TOKEN = {{OPERATOR_PLUS, EXPRESSIONNB},
@@ -154,7 +154,7 @@ void expressionNonBinary(stack<Token> &allTokens, Tree<string> &parentTree){ //l
 					while (allTokens.top().type != SEPARATOR_RIGHT_PAREN) {
 						Token top = allTokens.top();
 
-						if (top.type == OPERATOR_COMMA) {
+						if (top.type == SEPARATOR_COMMA) {
 							usedTokens.push(top);
 							allTokens.pop();
 							expressionNonBinary(allTokens,paramTree);
@@ -326,7 +326,7 @@ void functions(stack<Token> &allTokens, Tree<string> &parentTree){
 					Tree<string> temp2(temp.literal);
 					usedTrees.push(temp2) ; // adds newly made tree to used trees
 					allTokens.pop();
-					if (allTokens.size() != 0 && allTokens.top().type == OPERATOR_COMMA){ // if there is a comma there must be another identifier so pop off the comma
+					if (allTokens.size() != 0 && allTokens.top().type == SEPARATOR_COMMA){ // if there is a comma there must be another identifier so pop off the comma
 						usedTokens.push(allTokens.top());
 						allTokens.pop();
 					}// comma is not added to the tree

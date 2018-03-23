@@ -6,6 +6,14 @@ YodaScript is a Star Wars based programming language with many keywords and stat
 
 Sample code can be found in the ```sample``` folder.
 
+## Language Design
+
+The language can be described by the following Finite State Machines
+![Library and Functions](images/Library.jpeg?raw=true "Library and Functions")
+![Non-Binary Expressions](images/Expression.jpeg?raw=true "Non-Binary Expressions")
+![Binary Expressions](images/ExpressionBin.jpeg?raw=true "Binary Expressions")
+![Statements](images/Library.jpeg?raw=true "Statements")
+
 ## Building the Compiler
 
 ### Compilation Windows
