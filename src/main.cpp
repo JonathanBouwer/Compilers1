@@ -6,9 +6,16 @@
 #include "lexer.cpp"
 #include "parser.cpp"
 
-int compile(char* fileName, bool silent) {
+int compile(char* fileName, bool silent, bool lexOnly=false) {
     try {
         auto s = tokenizeFile(fileName);
+        if (lexOnly) {
+            while (!s.empty()) {
+                std::cout << s.top() << std::endl;
+                s.pop();
+            }
+            return 0;
+        }
         Tree<string> printTree("LIB");
         lib(s, printTree);
         printTree.printToFile("output.txt");
@@ -29,8 +36,12 @@ int main(int argc, char** argv) {
     if (argc <= 1) { 
         std::cout << "No file chosen" << endl;
         return 1;
-    } else if ((argc >= 3) && (argv[2][0] == '-') && (argv[2][1] == 'q')) {
-        return compile(argv[1], true);
+    } else if ((argc >= 3) && (argv[2][0] == '-')) {
+        if (argv[2][1] == 'q') {
+            return compile(argv[1], true);
+        } else {
+            return compile(argv[1], false, true);
+        }
     } else {
         return compile(argv[1], false);
     }
